@@ -306,7 +306,7 @@ function Index() {
               <DropdownMenuSeparator />
               {isAdmin && (
                 <DropdownMenuItem asChild>
-                  <Link to="/admin">Admin</Link>
+                  <Link to="/admin">Admin Panel</Link>
                 </DropdownMenuItem>
               )}
               {user ? (
