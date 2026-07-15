@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Navbar } from "@/components/Navbar";
 
 import { useEffect, useMemo, useState } from "react";
@@ -7,6 +7,9 @@ import { FamilyTree } from "@/components/family/FamilyTree";
 import { TreeSkeleton } from "@/components/family/TreeSkeleton";
 import { PersonDetail } from "@/components/family/PersonDetail";
 import { JoinRequestDialog } from "@/components/family/JoinRequestDialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Search, X, Menu } from "lucide-react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import {
   Dialog,
@@ -33,6 +36,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
+  const navigate = useNavigate();
   const { user, profile, isAdmin, role, isFamilyMember, signOut, refreshProfile } = useAuth();
   usePresence({
     userId: user?.id ?? null,
@@ -54,6 +58,9 @@ function Index() {
   const [branchPersonId, setBranchPersonId] = useState<string | null>(null);
   const [joinOpen, setJoinOpen] = useState(false);
   const [pendingRequest, setPendingRequest] = useState(false);
+  const [logoError, setLogoError] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     if (profile?.person_id) setHighlightId(profile.person_id);
@@ -143,30 +150,144 @@ function Index() {
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden">
-      <Navbar
-        user={user}
-        profile={profile}
-        isAdmin={isAdmin}
-        isFamilyMember={isFamilyMember}
-        role={role}
-        onSignOut={signOut}
-        query={query}
-        onQueryChange={setQuery}
-        matches={matches}
-        onSelectMatch={(id) => {
-          setSelectedId(id);
-          setHighlightId(id);
-        }}
-        hasMyNode={!!myNode}
-        onMyNode={() => {
-          if (myNode) {
-            setSelectedId(myNode.id);
-            setHighlightId(myNode.id);
-          }
-        }}
-        pendingJoinRequest={pendingRequest}
-        onOpenJoin={() => setJoinOpen(true)}
-      />
+      <header className="royal-navbar grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b px-3 py-3 sm:flex sm:flex-wrap sm:justify-between sm:gap-6 sm:px-6 sm:py-4 overflow-visible relative">
+        <div className="flex min-w-0 items-center gap-3 sm:gap-4 sm:shrink-0 color:blue">
+          {!logoError ? (
+            <img
+              src="/logo.png"
+              alt="Family logo"
+              width={96}
+              height={96}
+              decoding="async"
+              fetchPriority="high"
+              className="h-12 w-12 shrink-0 rounded-full border-2 border-yellow-600 object-cover sm:h-20 sm:w-20 md:h-24 md:w-24"
+              onError={() => setLogoError(true)}
+            />
+          ) : (
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 border-yellow-600 bg-yellow-900/30 text-lg font-semibold text-yellow-500 sm:h-20 sm:w-20 sm:text-2xl md:h-24 md:w-24">
+              त
+            </div>
+          )}
+          <div className="min-w-0">
+            <h1 className="truncate text-base font-bold text-yellow-400 pointer-events-none select-none sm:text-xl">तड़ियाल वंश</h1>
+            <p className="truncate text-[10px] text-yellow-300/80 flex items-center gap-1 pointer-events-none select-none sm:text-xs">
+              {user ? (
+                <>
+                  <span className="text-yellow-600">🛡️</span>
+                  <span>{isAdmin ? "Admin" : isFamilyMember ? "Family member" : role === "visitor" ? "Visitor" : "New member"} • Admin</span>
+                </>
+              ) : (
+                "Guest"
+              )}
+            </p>
+          </div>
+        </div>
+
+        <div className={`relative sm:order-0 sm:flex-1 sm:max-w-md ${mobileSearchOpen ? "order-3 col-span-2 w-full" : "hidden sm:block"}`}>
+          <div className="flex h-11 w-full items-stretch overflow-hidden rounded-md border-2 border-yellow-600 bg-white shadow-md focus-within:border-yellow-400 focus-within:shadow-[0_0_0_3px_rgba(201,169,97,0.35)]">
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search family members..."
+              aria-label="Search family members"
+              autoFocus={mobileSearchOpen}
+              className="h-full flex-1 rounded-none border-0 bg-white px-3 text-sm text-slate-900 placeholder:text-slate-500 focus-visible:ring-0 focus-visible:ring-offset-0"
+            />
+            <button
+              type="button"
+              aria-label={mobileSearchOpen ? "Close search" : "Search"}
+              onClick={() => {
+                if (mobileSearchOpen) {
+                  setQuery("");
+                  setMobileSearchOpen(false);
+                }
+              }}
+              className="flex h-full w-12 items-center justify-center bg-linear-to-b from-yellow-400 to-yellow-500 text-slate-900 transition-colors hover:from-yellow-300 hover:to-yellow-400 active:from-yellow-500 active:to-yellow-600"
+            >
+              {mobileSearchOpen ? <X className="h-5 w-5 sm:hidden" strokeWidth={2.5} /> : null}
+              <Search className={`h-5 w-5 ${mobileSearchOpen ? "hidden sm:block" : ""}`} strokeWidth={2.5} />
+            </button>
+          </div>
+          {matches.length > 0 && (
+            <div className="absolute left-0 right-0 z-50 mt-1 max-w-[95vw] overflow-hidden rounded-md border border-yellow-600/30 bg-slate-900 shadow-lg sm:w-full">
+              {matches.map((p) => (
+                <button
+                  key={p.id}
+                  className="block w-full truncate px-3 py-1.5 text-left text-sm leading-tight text-yellow-100 hover:bg-yellow-600/20"
+                  onClick={() => {
+                    setSelectedId(p.id);
+                    setHighlightId(p.id);
+                    setQuery("");
+                    setMobileSearchOpen(false);
+                  }}
+                >
+                  {p.name}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3 sm:shrink-0">
+          {!mobileSearchOpen && (
+            <button
+              type="button"
+              aria-label="Search"
+              onClick={() => setMobileSearchOpen(true)}
+              className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-yellow-600 bg-linear-to-b from-yellow-400 to-yellow-500 text-slate-900 shadow-md sm:hidden"
+            >
+              <Search className="h-4 w-4" strokeWidth={2.5} />
+            </button>
+          )}
+          {user && !myNode && (
+            <Button size="sm" disabled={pendingRequest} onClick={() => setJoinOpen(true)} className="royal-button-outlined select-none">
+              {pendingRequest ? "Request pending" : "Add me"}
+            </Button>
+          )}
+          {myNode && (
+            <Button
+              size="sm"
+              onClick={() => {
+                setSelectedId(myNode.id);
+                setHighlightId(myNode.id);
+              }}
+              className="royal-button-outlined select-none"
+            >
+              My node
+            </Button>
+          )}
+          
+          {/* Mobile menu button - only visible on mobile */}
+          <button
+            type="button"
+            aria-label="Menu"
+            onClick={() => setMobileMenuOpen(true)}
+            className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-yellow-600 bg-linear-to-b from-yellow-400 to-yellow-500 text-slate-900 shadow-md sm:hidden"
+          >
+            <Menu className="h-4 w-4" strokeWidth={2.5} />
+          </button>
+
+          {/* Desktop buttons - hidden on mobile */}
+          <div className="hidden sm:flex items-center gap-2 sm:gap-3">
+            {isAdmin && (
+              <Link to="/admin">
+                <Button size="sm" className="royal-button-outlined select-none">
+                  Admin
+                </Button>
+              </Link>
+            )}
+            {user ? (
+              <Button size="sm" onClick={signOut} className="royal-button-outlined select-none">
+                Sign out
+              </Button>
+            ) : (
+              <Button size="sm" onClick={() => navigate({ to: "/auth" })} className="royal-button-outlined select-none">
+                Sign in
+              </Button>
+            )}
+          </div>
+        </div>
+      </header>
       <main className="flex-1 min-h-0 overflow-hidden">
         {isLoading ? (
           <TreeSkeleton />
@@ -206,6 +327,31 @@ function Index() {
               onChanged={() => refetch()}
             />
           )}
+        </SheetContent>
+      </Sheet>
+
+      {/* Mobile Menu Sheet */}
+      <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+        <SheetContent side="right" className="w-full max-w-sm p-4">
+          <div className="flex flex-col gap-3">
+            <h2 className="text-lg font-semibold text-yellow-400 mb-2">Menu</h2>
+            {isAdmin && (
+              <Link to="/admin" onClick={() => setMobileMenuOpen(false)}>
+                <Button size="sm" className="royal-button-outlined select-none w-full">
+                  Admin
+                </Button>
+              </Link>
+            )}
+            {user ? (
+              <Button size="sm" onClick={() => { signOut(); setMobileMenuOpen(false); }} className="royal-button-outlined select-none w-full">
+                Sign out
+              </Button>
+            ) : (
+              <Button size="sm" onClick={() => { navigate({ to: "/auth" }); setMobileMenuOpen(false); }} className="royal-button-outlined select-none w-full">
+                Sign in
+              </Button>
+            )}
+          </div>
         </SheetContent>
       </Sheet>
 

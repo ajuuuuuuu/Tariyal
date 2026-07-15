@@ -149,7 +149,6 @@ function FamilySignIn({ onDone }: { onDone: () => void }) {
     try {
       const result = await lovable.auth.signInWithOAuth("google", {
         redirect_uri: window.location.origin,
-        extraParams: { prompt: "select_account" },
       });
       if (result.error) { toast.error("Google sign-in failed"); return; }
       if (result.redirected) return;

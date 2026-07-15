@@ -73,27 +73,6 @@ export type Database = {
           },
         ]
       }
-      page_visits: {
-        Row: {
-          created_at: string
-          id: string
-          path: string | null
-          visitor_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          path?: string | null
-          visitor_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          path?: string | null
-          visitor_id?: string
-        }
-        Relationships: []
-      }
       persons: {
         Row: {
           biography: string | null
@@ -158,15 +137,7 @@ export type Database = {
           person_id?: string | null
           updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "profiles_person_id_fkey"
-            columns: ["person_id"]
-            isOneToOne: false
-            referencedRelation: "persons"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       relationships: {
         Row: {
