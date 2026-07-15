@@ -54,8 +54,6 @@ function Index() {
   const [branchPersonId, setBranchPersonId] = useState<string | null>(null);
   const [joinOpen, setJoinOpen] = useState(false);
   const [pendingRequest, setPendingRequest] = useState(false);
-  const [logoError, setLogoError] = useState(false);
-  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
   useEffect(() => {
     if (profile?.person_id) setHighlightId(profile.person_id);
