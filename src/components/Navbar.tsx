@@ -248,6 +248,11 @@ export function Navbar({
               {user ? profile?.display_name ?? user.email : "Guest"}
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
+            <DropdownMenuItem disabled className="opacity-100">
+              <span className="text-xs text-yellow-300/80">
+                {user ? roleLabel : "Guest"}
+              </span>
+            </DropdownMenuItem>
             {isAdmin && (
               <DropdownMenuItem asChild>
                 <Link to="/admin">Admin Panel</Link>
