@@ -157,15 +157,7 @@ function AdminPage() {
     enabled: isAdmin,
     queryFn: async (): Promise<VisitRow[]> => {
       const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-      const { data, error } = await (supabase as unknown as {
-        from: (t: string) => {
-          select: (c: string) => {
-            gte: (c: string, v: string) => {
-              order: (c: string, o: { ascending: boolean }) => Promise<{ data: VisitRow[] | null; error: unknown }>;
-            };
-          };
-        };
-      })
+      const { data, error } = await supabase
         .from("page_visits")
         .select("visitor_id, created_at")
         .gte("created_at", since)
