@@ -7,18 +7,7 @@ import { FamilyTree } from "@/components/family/FamilyTree";
 import { TreeSkeleton } from "@/components/family/TreeSkeleton";
 import { PersonDetail } from "@/components/family/PersonDetail";
 import { JoinRequestDialog } from "@/components/family/JoinRequestDialog";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Search, X, Menu } from "lucide-react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
 import {
   Dialog,
   DialogContent,
