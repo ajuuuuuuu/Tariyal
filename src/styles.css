@@ -4,20 +4,6 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/*
- * Design system definition.
- *
- * The @theme inline block maps CSS custom properties to Tailwind utility
- * classes (e.g. --color-primary -> bg-primary, text-primary).
- *
- * The :root and .dark blocks define the actual color values using oklch.
- * All colors MUST use oklch format.
- *
- * To add a new semantic color:
- * 1. Add the variable to :root (light value) and .dark (dark value)
- * 2. Register it in @theme inline as --color-<name>: var(--<name>)
- */
-
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -137,8 +123,139 @@
     border-color: var(--color-border);
   }
 
+  html,
+  body,
+  #root {
+    height: 100%;
+    min-height: 100%;
+    margin: 0;
+    overflow: auto;
+  }
+
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    padding: 0;
   }
+}
+
+.royal-navbar {
+  background: linear-gradient(135deg, #0a1f3a 0%, #0d2d47 50%, #0a1f3a 100%);
+  border-top: 4px solid #c9a961;
+  border-bottom: 1px solid rgba(201, 169, 97, 0.2);
+  color: #fff8e5;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+}
+
+.royal-navbar::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -4px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #c9a961, transparent);
+  pointer-events: none;
+}
+
+.royal-button-outlined {
+  border: 2px solid #c9a961;
+  background-color: transparent;
+  color: #e8d5b5;
+  font-weight: 600;
+  padding: 0.4rem 1rem;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.royal-button-outlined:hover {
+  background-color: rgba(201, 169, 97, 0.15);
+  border-color: #e8d5b5;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(201, 169, 97, 0.25);
+}
+
+.royal-button-outlined:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.royal-button {
+  --gold: rgba(255, 215, 115, 0.12);
+  border-color: rgba(255, 215, 115, 0.18);
+  background-color: var(--gold);
+  color: #fffbe6;
+  font-weight: 600;
+  text-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+}
+
+.royal-button:hover {
+  background-color: rgba(255, 215, 115, 0.18);
+  transform: translateY(-1px);
+}
+
+.royal-search {
+  background-color: rgba(15, 23, 42, 0.5);
+  border: 2px solid #c9a961;
+  color: #ffffff;
+  padding-left: 2.8rem;
+  padding-right: 1rem;
+  padding-top: 0.6rem;
+  padding-bottom: 0.6rem;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.2);
+  border-radius: 0.6rem;
+  font-size: 1rem;
+  height: 2.8rem;
+  caret-color: transparent;
+}
+
+.royal-search::placeholder {
+  color: #9ca3af;
+}
+
+.royal-search:focus {
+  border-color: #d4a574;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.2), 0 0 12px rgba(201, 169, 97, 0.3);
+  background-color: rgba(15, 23, 42, 0.6);
+}
+
+@media (min-width: 640px) {
+  .royal-navbar h1 {
+    font-size: 1.375rem;
+  }
+}
+
+.royal-minimap {
+  background: linear-gradient(135deg, #0a1f3a 0%, #0d2d47 50%, #0a1f3a 100%) !important;
+  border: 2px solid #c9a961 !important;
+  border-radius: 2px !important;
+  width: 180px !important;
+  height: 100px !important;
+  overflow: hidden !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), inset 0 1px 3px rgba(201, 169, 97, 0.1);
+}
+
+.royal-minimap > svg {
+  background: linear-gradient(135deg, #0a1f3a 0%, #0d2d47 50%, #0a1f3a 100%) !important;
+  border-radius: 20px !important;
+}
+
+.react-flow__minimap {
+  background: linear-gradient(135deg, #0a1f3a 0%, #0d2d47 50%, #0a1f3a 100%) !important;
+}
+
+.react-flow__minimap-node {
+  fill: #c9a961 !important;
+  stroke: #e8d5b5 !important;
+}
+
+.react-flow__minimap-edge {
+  stroke: #c9a961 !important;
+  fill: none !important;
+}
+
+.react-flow__minimap-mask {
+  fill: rgba(15, 23, 42, 0.3) !important;
+  stroke: #c9a961 !important;
+  stroke-width: 1 !important;
 }
