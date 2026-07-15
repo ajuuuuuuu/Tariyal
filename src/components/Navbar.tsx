@@ -253,6 +253,11 @@ export function Navbar({
                 <Link to="/admin">Admin Panel</Link>
               </DropdownMenuItem>
             )}
+            {!user && (
+              <DropdownMenuItem onSelect={() => navigate({ to: "/" })}>
+                Continue as visitor
+              </DropdownMenuItem>
+            )}
             {user ? (
               <DropdownMenuItem onSelect={() => onSignOut()}>Sign out</DropdownMenuItem>
             ) : (
