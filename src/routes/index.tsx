@@ -64,6 +64,8 @@ function Index() {
   useEffect(() => {
     if (!user) {
       setPendingRequest(false);
+      setSelectedId(null);
+      setBranchPersonId(null);
       return;
     }
     supabase
@@ -186,7 +188,7 @@ function Index() {
         )}
       </main>
 
-      <Sheet open={!!selectedId} onOpenChange={(o) => !o && setSelectedId(null)}>
+      <Sheet open={!!selectedId && !!user} onOpenChange={(o) => !o && setSelectedId(null)}>
         <SheetContent side="right" className="w-full p-0 sm:max-w-md">
           {selectedId && (
             <PersonDetail

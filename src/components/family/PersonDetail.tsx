@@ -49,7 +49,7 @@ export function PersonDetail({
   if (!person) return null;
 
   const isSelf = currentUserPersonId === person.id;
-  const canEdit = isAdmin || userRole === "member" || isSelf;
+  const canEdit = Boolean(currentUserId) && (isAdmin || userRole === "member" || isSelf);
   const canAddWife = isAdmin && person.gender === "male";
 
   const parents = relationships

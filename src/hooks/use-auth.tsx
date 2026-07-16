@@ -64,6 +64,11 @@ export function useAuth() {
   }, [refresh]);
 
   const signOut = useCallback(async () => {
+    setSession(null);
+    setUser(null);
+    setProfile(null);
+    setIsAdmin(false);
+    setRole(null);
     await supabase.auth.signOut();
   }, []);
 
