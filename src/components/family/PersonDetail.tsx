@@ -244,14 +244,14 @@ export function PersonDetail({
               View birth family tree
             </Button>
           )}
-          {currentPerson.gender === "female" && onViewBirthFamily && (
+          {currentPerson.gender === "female" && onViewBirthFamily && (currentPerson.gender === "female" || currentPerson.gender === "female") && (
             <Button
               size="sm"
               variant="secondary"
               className="rounded-full border border-yellow-500/40 bg-yellow-500/10 px-2.5 py-1 text-[11px] font-medium text-yellow-700 transition hover:bg-yellow-500/20 dark:text-yellow-300"
               onClick={() => onViewBirthFamily(currentPerson.id)}
             >
-              Switch tree
+              Personal family tree
             </Button>
           )}
           <Button variant="outline" size="sm" onClick={() => setMode("suggest")}>
