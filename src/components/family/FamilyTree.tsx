@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
+import type { ComponentType } from "react";
 import ReactFlow, {
   Background,
   Controls,
@@ -12,6 +13,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import type { Person, Relationship } from "@/lib/family-data";
 
 const nodeTypes = { person: PersonNode } as const;
+const memoizedNodeTypes = nodeTypes as Record<string, ComponentType<any>>;
 
 export function FamilyTree({
   persons,
@@ -81,7 +83,7 @@ export function FamilyTree({
       key={rfKey}
       nodes={styledNodes}
       edges={edges}
-      nodeTypes={nodeTypes}
+      nodeTypes={memoizedNodeTypes}
       onNodeClick={(_, node) => onSelect(node.id)}
       onNodeDoubleClick={(_, node) => onOpen?.(node.id)}
       fitView
@@ -92,7 +94,7 @@ export function FamilyTree({
       <Background gap={20} />
       <Controls showInteractive={false} />
       <MiniMap
-        className="!bottom-3 !right-3 rounded-lg border border-yellow-600/40 bg-slate-900/80 shadow-lg backdrop-blur-sm"
+        className="bottom-3! right-3! rounded-lg border border-yellow-600/40 bg-slate-900/80 shadow-lg backdrop-blur-sm"
         style={{
           width: isMobile ? 120 : 200,
           height: isMobile ? 80 : 150,

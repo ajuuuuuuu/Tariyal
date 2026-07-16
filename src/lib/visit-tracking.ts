@@ -24,7 +24,9 @@ export async function trackPageVisit() {
     const { error } = await supabase.from("page_visits").insert({ visitor_id: visitorId });
 
     if (error) {
-      if (error.code !== "42P01") {
+      if (error.code === "42P01" || error.message?.includes("does not exist") || error.message?.includes("not found")) {
+        window.sessionStorage.setItem(TRACKED_SESSION_KEY, "1");
+      } else {
         console.warn("Failed to record page visit", error);
       }
       return;
