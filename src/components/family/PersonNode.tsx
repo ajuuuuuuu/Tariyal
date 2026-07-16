@@ -109,7 +109,7 @@ export function PersonNode({ data }: { data: NodeData }) {
         </div>
       </div>
       <div className="mt-2 flex w-full justify-center">
-        {data.canSwitchTree && data.onSwitchTree && (
+        {p.gender === "female" && data.canSwitchTree && data.onSwitchTree && (
           <button
             type="button"
             onClick={(e) => {
