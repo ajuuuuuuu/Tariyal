@@ -48,16 +48,17 @@ export function PersonDetail({
 
   if (!person) return null;
 
-  const isSelf = currentUserPersonId === person.id;
+  const currentPerson = person;
+  const isSelf = currentUserPersonId === currentPerson.id;
   const canEdit = Boolean(currentUserId) && (isAdmin || userRole === "member" || isSelf);
-  const canAddWife = isAdmin && person.gender === "male";
+  const canAddWife = isAdmin && currentPerson.gender === "male";
 
   const parents = relationships
-    .filter((r) => r.type === "parent" && r.person2Id === person.id)
+    .filter((r) => r.type === "parent" && r.person2Id === currentPerson.id)
     .map((r) => persons.find((p) => p.id === r.person1Id))
     .filter(Boolean) as Person[];
   const children = relationships
-    .filter((r) => r.type === "parent" && r.person1Id === person.id)
+    .filter((r) => r.type === "parent" && r.person1Id === currentPerson.id)
     .slice()
     .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
     .map((r) => persons.find((p) => p.id === r.person2Id))
@@ -65,10 +66,10 @@ export function PersonDetail({
   const spouses = relationships
     .filter(
       (r) =>
-        r.type === "spouse" && (r.person1Id === person.id || r.person2Id === person.id),
+        r.type === "spouse" && (r.person1Id === currentPerson.id || r.person2Id === currentPerson.id),
     )
     .map((r) =>
-      persons.find((p) => p.id === (r.person1Id === person.id ? r.person2Id : r.person1Id)),
+      persons.find((p) => p.id === (r.person1Id === currentPerson.id ? r.person2Id : r.person1Id)),
     )
     .filter(Boolean) as Person[];
 
@@ -94,13 +95,13 @@ export function PersonDetail({
     };
 
     const { error } = await supabase.from("suggestions").insert({
-      person_id: person.id,
+      person_id: currentPerson.id,
       user_id: currentUserId,
       submitter_name: currentUserName || null,
       submitter_email: currentUserEmail || null,
       message: JSON.stringify({
         type: "person_edit",
-        person_id: person.id,
+        person_id: currentPerson.id,
         patch,
       }),
     });
@@ -111,24 +112,24 @@ export function PersonDetail({
   return (
     <div className="flex h-full flex-col gap-4 overflow-y-auto p-6">
       <div className="flex items-start gap-4">
-        {person.photoUrl ? (
-          <img src={person.photoUrl} alt={person.name} className="h-20 w-20 rounded-full object-cover" />
+        {currentPerson.photoUrl ? (
+          <img src={currentPerson.photoUrl} alt={currentPerson.name} className="h-20 w-20 rounded-full object-cover" />
         ) : (
           <div className="flex h-20 w-20 items-center justify-center rounded-full bg-muted text-xl font-semibold text-muted-foreground">
-            {person.name.split(" ").map((s) => s[0]).slice(0, 2).join("")}
+            {currentPerson.name.split(" ").map((s) => s[0]).slice(0, 2).join("")}
           </div>
         )}
         <div className="flex-1">
-          <h2 className="text-xl font-semibold">{person.name}</h2>
-          <p className="text-sm text-muted-foreground capitalize">{person.gender}</p>
+          <h2 className="text-xl font-semibold">{currentPerson.name}</h2>
+          <p className="text-sm text-muted-foreground capitalize">{currentPerson.gender}</p>
           <p className="text-sm text-muted-foreground">
-            {person.birthDate || "?"} {person.deathDate ? `– ${person.deathDate}` : ""}
+            {currentPerson.birthDate || "?"} {currentPerson.deathDate ? `– ${currentPerson.deathDate}` : ""}
           </p>
         </div>
       </div>
 
-      {person.biography && (
-        <p className="text-sm leading-relaxed text-foreground">{person.biography}</p>
+      {currentPerson.biography && (
+        <p className="text-sm leading-relaxed text-foreground">{currentPerson.biography}</p>
       )}
 
       <Separator />
@@ -143,13 +144,13 @@ export function PersonDetail({
 
       {mode === "view" && (
         <div className="flex flex-wrap gap-2">
-          {person.familyGroup && person.familyGroup !== MAIN_FAMILY && onViewBirthFamily && (isAdmin || canViewBirthFamily) && (
-            <Button size="sm" variant="secondary" onClick={() => onViewBirthFamily(person.id)}>
+          {currentPerson.familyGroup && currentPerson.familyGroup !== MAIN_FAMILY && onViewBirthFamily && (isAdmin || canViewBirthFamily) && (
+            <Button size="sm" variant="secondary" onClick={() => onViewBirthFamily(currentPerson.id)}>
               View birth family tree
             </Button>
           )}
-          {person.gender === "female" && onViewBirthFamily && (
-            <Button size="sm" variant="secondary" onClick={() => onViewBirthFamily(person.id)}>
+          {currentPerson.gender === "female" && onViewBirthFamily && (
+            <Button size="sm" variant="secondary" onClick={() => onViewBirthFamily(currentPerson.id)}>
               Switch tree
             </Button>
           )}
@@ -175,9 +176,9 @@ export function PersonDetail({
                 size="sm"
                 variant="destructive"
                 onClick={() => {
-                  if (confirm(`Delete ${person.name}?`)) {
+                  if (confirm(`Delete ${currentPerson.name}?`)) {
                     run(async () => {
-                      await deletePerson(person.id);
+                      await deletePerson(currentPerson.id);
                       onClose();
                     }, "Deleted");
                   }
@@ -192,8 +193,8 @@ export function PersonDetail({
 
       {mode === "suggest" && (
         <SuggestionForm
-          personId={person.id}
-          personName={person.name}
+          personId={currentPerson.id}
+          personName={currentPerson.name}
           userId={currentUserId}
           defaultName={currentUserName}
           defaultEmail={currentUserEmail}
@@ -202,11 +203,11 @@ export function PersonDetail({
       )}
       {mode === "edit" && (
         <PersonEditor
-          initial={person}
+          initial={currentPerson}
           onCancel={() => setMode("view")}
           onSubmit={(data) => {
             if (isAdmin) {
-              void run(() => updatePerson(person.id, data));
+              void run(() => updatePerson(currentPerson.id, data));
               return;
             }
 
@@ -223,8 +224,8 @@ export function PersonDetail({
           onCancel={() => setMode("view")}
           onSubmit={(data) =>
             run(async () => {
-              const child = await addPerson({ ...data, familyGroup: person.familyGroup });
-              await addRelationship({ person1Id: person.id, person2Id: child.id, type: "parent" });
+              const child = await addPerson({ ...data, familyGroup: currentPerson.familyGroup });
+              await addRelationship({ person1Id: currentPerson.id, person2Id: child.id, type: "parent" });
             }, "Descendant added")
           }
         />
@@ -235,13 +236,13 @@ export function PersonDetail({
           onCancel={() => setMode("view")}
           onSubmit={(data) =>
             run(async () => {
-              await addWife(person.id, {
+              await addWife(currentPerson.id, {
                 name: data.name,
                 birthDate: data.birthDate,
                 deathDate: data.deathDate,
                 photoUrl: data.photoUrl,
                 biography: data.biography,
-                familyGroup: person.familyGroup,
+                familyGroup: currentPerson.familyGroup,
               });
             }, "Wife added")
           }
