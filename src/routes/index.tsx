@@ -211,31 +211,6 @@ function Index() {
         </SheetContent>
       </Sheet>
 
-      {/* Mobile Menu Sheet */}
-      <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-        <SheetContent side="right" className="w-full max-w-sm p-4">
-          <div className="flex flex-col gap-3">
-            <h2 className="text-lg font-semibold text-yellow-400 mb-2">Menu</h2>
-            {isAdmin && (
-              <Link to="/admin" onClick={() => setMobileMenuOpen(false)}>
-                <Button size="sm" className="royal-button-outlined select-none w-full">
-                  Admin
-                </Button>
-              </Link>
-            )}
-            {user ? (
-              <Button size="sm" onClick={() => { signOut(); setMobileMenuOpen(false); }} className="royal-button-outlined select-none w-full">
-                Sign out
-              </Button>
-            ) : (
-              <Button size="sm" onClick={() => { navigate({ to: "/auth" }); setMobileMenuOpen(false); }} className="royal-button-outlined select-none w-full">
-                Sign in
-              </Button>
-            )}
-          </div>
-        </SheetContent>
-      </Sheet>
-
       <Dialog open={!!branchPerson} onOpenChange={(o) => !o && setBranchPersonId(null)}>
         <DialogContent className="flex h-[80vh] max-w-5xl flex-col p-0">
           <DialogHeader className="shrink-0 border-b px-6 py-4">
