@@ -52,6 +52,7 @@ function Index() {
   const [query, setQuery] = useState("");
   const [highlightId, setHighlightId] = useState<string | null>(null);
   const [branchPersonId, setBranchPersonId] = useState<string | null>(null);
+  const [branchMode, setBranchMode] = useState<"origin" | "marriage">("origin");
   const [joinOpen, setJoinOpen] = useState(false);
   const [pendingRequest, setPendingRequest] = useState(false);
 
@@ -120,10 +121,44 @@ function Index() {
     ? persons.find((p) => p.id === branchPersonId) ?? null
     : null;
   const branchGroup = branchPerson?.familyGroup;
-  const branchPersons = useMemo(
-    () => (branchGroup ? persons.filter((p) => p.familyGroup === branchGroup) : []),
-    [persons, branchGroup],
-  );
+  const branchPersons = useMemo(() => {
+    if (!branchPerson) return [];
+
+    const personIds = new Set<string>();
+    const personMap = new Map(persons.map((p) => [p.id, p]));
+
+    const collect = (currentId: string, depth = 0) => {
+      if (depth > 2) return;
+      const current = personMap.get(currentId);
+      if (!current) return;
+      personIds.add(current.id);
+
+      const parents = relationships
+        .filter((r) => r.type === "parent" && r.person2Id === current.id)
+        .map((r) => r.person1Id);
+      const children = relationships
+        .filter((r) => r.type === "parent" && r.person1Id === current.id)
+        .map((r) => r.person2Id);
+      const spouses = relationships
+        .filter((r) => r.type === "spouse" && (r.person1Id === current.id || r.person2Id === current.id))
+        .map((r) => (r.person1Id === current.id ? r.person2Id : r.person1Id));
+
+      if (branchMode === "origin") {
+        parents.forEach((id) => collect(id, depth + 1));
+        children.forEach((id) => collect(id, depth + 1));
+      } else {
+        spouses.forEach((id) => collect(id, depth + 1));
+      }
+    };
+
+    collect(branchPerson.id);
+
+    if (!personIds.size) {
+      personIds.add(branchPerson.id);
+    }
+
+    return Array.from(personIds, (id) => personMap.get(id)).filter(Boolean) as typeof persons;
+  }, [branchMode, branchPerson, persons, relationships]);
   const branchIds = useMemo(() => new Set(branchPersons.map((p) => p.id)), [branchPersons]);
   const branchRelationships = useMemo(
     () =>
@@ -205,6 +240,7 @@ function Index() {
               onClose={() => setSelectedId(null)}
               onViewBirthFamily={(id) => {
                 setBranchPersonId(id);
+                setBranchMode("origin");
                 setSelectedId(null);
               }}
               onChanged={() => refetch()}
@@ -216,13 +252,35 @@ function Index() {
       <Dialog open={!!branchPerson} onOpenChange={(o) => !o && setBranchPersonId(null)}>
         <DialogContent className="flex h-[80vh] max-w-5xl flex-col p-0">
           <DialogHeader className="shrink-0 border-b px-6 py-4">
-            <DialogTitle>
-              {branchPerson?.name}'s birth family
-              {branchGroup ? ` — the ${capitalize(branchGroup)}s` : ""}
-            </DialogTitle>
-            <DialogDescription>
-              Highlighted within their ancestral family tree.
-            </DialogDescription>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <DialogTitle>
+                  {branchPerson?.name}'s {branchMode === "origin" ? "origin family" : "marriage family"}
+                  {branchGroup ? ` — the ${capitalize(branchGroup)}s` : ""}
+                </DialogTitle>
+                <DialogDescription>
+                  {branchMode === "origin"
+                    ? "Showing parents, children, and the surrounding birth-family branch."
+                    : "Showing spouses and the surrounding marriage-family branch."}
+                </DialogDescription>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setBranchMode("origin")}
+                  className={`rounded-full border px-3 py-1 text-sm ${branchMode === "origin" ? "bg-primary text-primary-foreground" : "bg-background"}`}
+                >
+                  Origin family
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setBranchMode("marriage")}
+                  className={`rounded-full border px-3 py-1 text-sm ${branchMode === "marriage" ? "bg-primary text-primary-foreground" : "bg-background"}`}
+                >
+                  Marriage family
+                </button>
+              </div>
+            </div>
           </DialogHeader>
           <div className="min-h-0 flex-1 w-full">
             {branchPerson && (
