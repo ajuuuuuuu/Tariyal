@@ -174,9 +174,21 @@ function FamilySignIn({ onDone }: { onDone: () => void }) {
       const result = await lovable.auth.signInWithOAuth("google", {
         redirect_uri: window.location.origin,
       });
-      if (result.error) throw result.error;
-      if (result.redirected) return;
-      onDone();
+
+      if (result.error) {
+        throw result.error;
+      }
+
+      if (result.redirected) {
+        return;
+      }
+
+      if (result.tokens?.access_token) {
+        const { error } = await supabase.auth.setSession(result.tokens);
+        if (error) throw error;
+      }
+
+      window.location.assign("/");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Google sign-in failed");
     } finally {
