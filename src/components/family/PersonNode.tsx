@@ -108,20 +108,6 @@ export function PersonNode({ data }: { data: NodeData }) {
           {getYear(p.birthDate) || "?"} – {getYear(p.deathDate) || ""}
         </div>
       </div>
-      <div className="mt-2 flex w-full justify-center">
-        {p.gender === "female" && data.canSwitchTree && data.onSwitchTree && (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              data.onSwitchTree!(p.id);
-            }}
-            className="rounded-full border border-yellow-500/40 bg-yellow-500/10 px-2.5 py-1 text-[11px] font-medium text-yellow-700 transition hover:bg-yellow-500/20 dark:text-yellow-300"
-          >
-            Switch tree
-          </button>
-        )}
-      </div>
       {data.hasChildren && data.onToggleCollapse && (
         <button
           type="button"
