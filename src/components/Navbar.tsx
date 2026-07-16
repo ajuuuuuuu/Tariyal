@@ -33,8 +33,15 @@ export interface NavbarMatch {
 export interface NavbarUserMeta {
   avatar_url?: string;
   picture?: string;
+  profile_picture?: string;
+  photo_url?: string;
+  photoURL?: string;
+  image_url?: string;
+  imageUrl?: string;
   full_name?: string;
   name?: string;
+  given_name?: string;
+  family_name?: string;
 }
 
 export interface NavbarProps {
@@ -88,7 +95,15 @@ export function Navbar({
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
   const meta = (user?.user_metadata ?? {}) as NavbarUserMeta;
-  const googlePhoto = meta.avatar_url || meta.picture || null;
+  const googlePhoto =
+    meta.avatar_url ||
+    meta.picture ||
+    meta.profile_picture ||
+    meta.photo_url ||
+    meta.photoURL ||
+    meta.image_url ||
+    meta.imageUrl ||
+    null;
   const nameSource =
     profile?.display_name ||
     meta.full_name ||
