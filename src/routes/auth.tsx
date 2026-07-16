@@ -25,13 +25,18 @@ function AuthPage() {
 
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
       if (active && session?.user) {
-        navigate({ to: "/" });
+        window.location.assign("/");
       }
     });
 
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("error")) {
+      toast.error(params.get("error_description") ?? "Authentication failed");
+    }
+
     supabase.auth.getSession().then(({ data }) => {
       if (active && data.session?.user) {
-        navigate({ to: "/" });
+        window.location.assign("/");
       }
     });
 
@@ -39,7 +44,7 @@ function AuthPage() {
       active = false;
       sub.subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, []);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4 py-10">
