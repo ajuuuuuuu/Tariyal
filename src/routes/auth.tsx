@@ -131,7 +131,11 @@ function FamilySignIn({ onDone }: { onDone: () => void }) {
           },
         });
         if (error) throw error;
-        toast.success("Account created.");
+
+        const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+        if (signInError) throw signInError;
+
+        toast.success("Account created and signed in.");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;

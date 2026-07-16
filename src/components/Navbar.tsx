@@ -105,7 +105,9 @@ export function Navbar({
     ? "Family member"
     : role === "visitor"
     ? "Visitor"
-    : "New member";
+    : user
+    ? "New member"
+    : "Guest";
 
   return (
     <header className="royal-navbar grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b px-3 py-3 sm:flex sm:flex-wrap sm:justify-between sm:gap-6 sm:px-6 sm:py-4 overflow-visible relative">
