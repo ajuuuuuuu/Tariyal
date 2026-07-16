@@ -33,7 +33,6 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const navigate = useNavigate();
   const { user, profile, isAdmin, role, isFamilyMember, signOut, refreshProfile } = useAuth();
   usePresence({
     userId: user?.id ?? null,
