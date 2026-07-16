@@ -91,15 +91,15 @@ export function FamilyTree({
     >
       <Background gap={20} />
       <Controls showInteractive={false} />
-      <div
-        style={
-          isMobile
-            ? { position: "absolute", bottom: 10, right: 10, width: "30px", height: "15px", overflow: "hidden" }
-            : { position: "absolute", bottom: 10, right: 10, width: "30px", height: "15px" }
-        }
-      >
-        <MiniMap pannable zoomable />
-      </div>
+      <MiniMap
+        className="!bottom-3 !right-3 rounded-lg border border-yellow-600/40 bg-slate-900/80 shadow-lg backdrop-blur-sm"
+        style={{
+          width: isMobile ? 120 : 200,
+          height: isMobile ? 80 : 150,
+        }}
+        pannable
+        zoomable
+      />
     </ReactFlow>
   );
 }
