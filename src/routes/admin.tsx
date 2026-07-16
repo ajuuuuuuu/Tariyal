@@ -245,6 +245,53 @@ function AdminPage() {
     else { toast.success("Updated"); suggestionsQ.refetch(); }
   }
 
+  async function applyEditSuggestion(s: SuggestionRow) {
+    try {
+      const parsed = JSON.parse(s.message) as {
+        type?: string;
+        person_id?: string;
+        patch?: {
+          name?: string;
+          gender?: "male" | "female" | "other";
+          birthDate?: string;
+          deathDate?: string;
+          photoUrl?: string;
+          biography?: string;
+        };
+      };
+
+      if (parsed.type !== "person_edit" || !parsed.person_id || !parsed.patch) {
+        throw new Error("This suggestion does not contain a node edit request.");
+      }
+
+      const patch = parsed.patch;
+      const { error } = await supabase
+        .from("persons")
+        .update({
+          ...(patch.name !== undefined && { name: patch.name }),
+          ...(patch.gender !== undefined && { gender: patch.gender }),
+          ...(patch.birthDate !== undefined && { birth_date: patch.birthDate || null }),
+          ...(patch.deathDate !== undefined && { death_date: patch.deathDate || null }),
+          ...(patch.photoUrl !== undefined && { photo_url: patch.photoUrl || null }),
+          ...(patch.biography !== undefined && { biography: patch.biography || null }),
+        })
+        .eq("id", parsed.person_id);
+      if (error) throw error;
+
+      const { error: updateErr } = await supabase
+        .from("suggestions")
+        .update({ status: "approved" })
+        .eq("id", s.id);
+      if (updateErr) throw updateErr;
+
+      toast.success("Edit approved and applied");
+      suggestionsQ.refetch();
+      family.refetch();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to apply edit request");
+    }
+  }
+
   async function approve(r: JoinRequest) {
     try {
       const parent = persons.find((p) => p.id === r.parent_person_id);
@@ -482,7 +529,17 @@ function AdminPage() {
                     </div>
                     <p className="mt-1 text-sm">{s.message}</p>
                     {s.status === "pending" && (
-                      <div className="mt-2 flex gap-2">
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {(() => {
+                          try {
+                            const parsed = JSON.parse(s.message) as { type?: string };
+                            return parsed.type === "person_edit" ? (
+                              <Button size="sm" variant="secondary" onClick={() => applyEditSuggestion(s)}>Approve edit</Button>
+                            ) : null;
+                          } catch {
+                            return null;
+                          }
+                        })()}
                         <Button size="sm" variant="secondary" onClick={() => updateSuggestion(s.id, "reviewed")}>Mark reviewed</Button>
                         <Button size="sm" variant="ghost" onClick={() => updateSuggestion(s.id, "dismissed")}>Dismiss</Button>
                       </div>

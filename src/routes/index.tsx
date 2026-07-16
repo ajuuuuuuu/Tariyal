@@ -199,6 +199,7 @@ function Index() {
               currentUserId={user?.id ?? null}
               currentUserName={profile?.display_name ?? ""}
               currentUserEmail={user?.email ?? ""}
+              userRole={role}
               onClose={() => setSelectedId(null)}
               onViewBirthFamily={(id) => {
                 setBranchPersonId(id);

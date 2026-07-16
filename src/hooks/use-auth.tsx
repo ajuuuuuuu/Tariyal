@@ -36,12 +36,15 @@ export function useAuth() {
     setProfile(prof as Profile | null);
     setIsAdmin(Boolean(roleData));
     const roles = (rolesRows ?? []).map((r: { role: string }) => r.role);
+    const hasExplicitRole = roles.length > 0;
     setRole(
       roles.includes("admin")
         ? "admin"
         : roles.includes("member")
         ? "member"
-        : "visitor",
+        : hasExplicitRole
+        ? "visitor"
+        : null,
     );
   }, []);
 

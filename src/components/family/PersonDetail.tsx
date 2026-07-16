@@ -11,6 +11,7 @@ import {
   updatePerson,
 } from "@/lib/family-api";
 import { MAIN_FAMILY, type Person, type Relationship } from "@/lib/family-data";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export function PersonDetail({
@@ -23,6 +24,7 @@ export function PersonDetail({
   currentUserId = null,
   currentUserName = "",
   currentUserEmail = "",
+  userRole = null,
   onClose,
   onViewBirthFamily,
   onChanged,
@@ -36,6 +38,7 @@ export function PersonDetail({
   currentUserId?: string | null;
   currentUserName?: string;
   currentUserEmail?: string;
+  userRole?: "admin" | "member" | "visitor" | null;
   onClose: () => void;
   onViewBirthFamily?: (id: string) => void;
   onChanged: () => void;
@@ -46,7 +49,7 @@ export function PersonDetail({
   if (!person) return null;
 
   const isSelf = currentUserPersonId === person.id;
-  const canEdit = isAdmin || isSelf;
+  const canEdit = isAdmin || userRole === "member" || isSelf;
   const canAddWife = isAdmin && person.gender === "male";
 
   const parents = relationships
@@ -69,15 +72,40 @@ export function PersonDetail({
     )
     .filter(Boolean) as Person[];
 
-  async function run(fn: () => Promise<unknown>, msg = "Saved") {
+  async function run(fn: () => Promise<unknown>, msg = "Saved", refresh = true) {
     try {
       await fn();
       toast.success(msg);
-      onChanged();
+      if (refresh) onChanged();
       setMode("view");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed");
     }
+  }
+
+  async function submitEditRequest(data: Omit<Person, "id">) {
+    const patch = {
+      name: data.name,
+      gender: data.gender,
+      birthDate: data.birthDate,
+      deathDate: data.deathDate,
+      photoUrl: data.photoUrl,
+      biography: data.biography,
+    };
+
+    const { error } = await supabase.from("suggestions").insert({
+      person_id: person.id,
+      user_id: currentUserId,
+      submitter_name: currentUserName || null,
+      submitter_email: currentUserEmail || null,
+      message: JSON.stringify({
+        type: "person_edit",
+        person_id: person.id,
+        patch,
+      }),
+    });
+
+    if (error) throw error;
   }
 
   return (
@@ -125,7 +153,7 @@ export function PersonDetail({
           </Button>
           {canEdit && (
             <Button size="sm" onClick={() => setMode("edit")}>
-              {isAdmin ? "Edit" : "Edit my info"}
+              {isAdmin ? "Edit" : "Request edit"}
             </Button>
           )}
           {isAdmin && (
@@ -171,7 +199,18 @@ export function PersonDetail({
         <PersonEditor
           initial={person}
           onCancel={() => setMode("view")}
-          onSubmit={(data) => run(() => updatePerson(person.id, data))}
+          onSubmit={(data) => {
+            if (isAdmin) {
+              void run(() => updatePerson(person.id, data));
+              return;
+            }
+
+            void run(
+              () => submitEditRequest(data),
+              "Edit request sent to admin for approval.",
+              false,
+            );
+          }}
         />
       )}
       {mode === "addDesc" && (
