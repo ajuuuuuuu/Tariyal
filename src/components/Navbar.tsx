@@ -253,7 +253,7 @@ export function Navbar({
             ) : (
               <DropdownMenuItem onSelect={() => navigate({ to: "/auth" })}>Sign in</DropdownMenuItem>
             )}
-            {user && (
+            {user && isAdmin && (
               <DropdownMenuItem onSelect={() => navigate({ to: "/auth" })}>
                 {role === "visitor" ? "Continue as visitor" : "Guest view"}
               </DropdownMenuItem>
