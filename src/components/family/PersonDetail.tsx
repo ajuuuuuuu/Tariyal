@@ -148,6 +148,11 @@ export function PersonDetail({
               View birth family tree
             </Button>
           )}
+          {person.gender === "female" && onViewBirthFamily && (
+            <Button size="sm" variant="secondary" onClick={() => onViewBirthFamily(person.id)}>
+              Switch tree
+            </Button>
+          )}
           <Button variant="outline" size="sm" onClick={() => setMode("suggest")}>
             Suggest a correction
           </Button>
