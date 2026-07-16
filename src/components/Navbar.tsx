@@ -253,9 +253,11 @@ export function Navbar({
             ) : (
               <DropdownMenuItem onSelect={() => navigate({ to: "/auth" })}>Sign in</DropdownMenuItem>
             )}
-            <DropdownMenuItem onSelect={() => navigate({ to: "/auth" })}>
-              {role === "visitor" || !user ? "Continue as visitor" : "Guest view"}
-            </DropdownMenuItem>
+            {user && (
+              <DropdownMenuItem onSelect={() => navigate({ to: "/auth" })}>
+                {role === "visitor" ? "Continue as visitor" : "Guest view"}
+              </DropdownMenuItem>
+            )}
             {isAdmin && (
               <DropdownMenuItem asChild>
                 <Link to="/admin">Admin Panel</Link>
