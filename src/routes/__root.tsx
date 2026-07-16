@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
+import { trackPageVisit } from "@/lib/visit-tracking";
 
 function NotFoundComponent() {
   return (
@@ -120,6 +121,10 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+
+  useEffect(() => {
+    void trackPageVisit();
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
