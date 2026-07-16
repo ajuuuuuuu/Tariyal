@@ -248,15 +248,18 @@ export function Navbar({
               {user ? profile?.display_name ?? user.email : "Guest"}
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            {isAdmin && (
-              <DropdownMenuItem asChild>
-                <Link to="/admin">Admin Panel</Link>
-              </DropdownMenuItem>
-            )}
             {user ? (
               <DropdownMenuItem onSelect={() => onSignOut()}>Sign out</DropdownMenuItem>
             ) : (
               <DropdownMenuItem onSelect={() => navigate({ to: "/auth" })}>Sign in</DropdownMenuItem>
+            )}
+            <DropdownMenuItem onSelect={() => navigate({ to: "/auth" })}>
+              {role === "visitor" || !user ? "Continue as visitor" : "Guest view"}
+            </DropdownMenuItem>
+            {isAdmin && (
+              <DropdownMenuItem asChild>
+                <Link to="/admin">Admin Panel</Link>
+              </DropdownMenuItem>
             )}
           </DropdownMenuContent>
         </DropdownMenu>
