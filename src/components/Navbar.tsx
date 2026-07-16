@@ -258,7 +258,7 @@ export function Navbar({
                 {role === "visitor" ? "Continue as visitor" : "Guest view"}
               </DropdownMenuItem>
             )}
-            {isAdmin && (
+            {user && isAdmin && (
               <DropdownMenuItem asChild>
                 <Link to="/admin">Admin Panel</Link>
               </DropdownMenuItem>
