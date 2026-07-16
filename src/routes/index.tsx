@@ -25,7 +25,7 @@ export const Route = createFileRoute("/")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Umed Family Tree" },
+      { title: "Tariyal Vanshawali" },
       { name: "description", content: "Explore the interactive family tree of the Umed family." },
     ],
   }),
