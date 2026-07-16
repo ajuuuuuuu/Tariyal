@@ -22,9 +22,24 @@ function AuthPage() {
   const [tab, setTab] = useState<TabId>("family");
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/" });
+    let active = true;
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (active && session?.user) {
+        navigate({ to: "/" });
+      }
     });
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (active && data.session?.user) {
+        navigate({ to: "/" });
+      }
+    });
+
+    return () => {
+      active = false;
+      sub.subscription.unsubscribe();
+    };
   }, [navigate]);
 
   return (

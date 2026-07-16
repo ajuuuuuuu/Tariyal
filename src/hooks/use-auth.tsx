@@ -22,44 +22,56 @@ export function useAuth() {
       setProfile(null);
       setIsAdmin(false);
       setRole(null);
+      setLoading(false);
       return;
     }
-    const [{ data: prof }, { data: roleData }, { data: rolesRows }] = await Promise.all([
-      supabase
-        .from("profiles")
-        .select("id, display_name, email, person_id")
-        .eq("id", u.id)
-        .maybeSingle(),
-      supabase.rpc("has_role", { _user_id: u.id, _role: "admin" }),
-      supabase.from("user_roles").select("role").eq("user_id", u.id),
-    ]);
-    setProfile(prof as Profile | null);
-    setIsAdmin(Boolean(roleData));
-    const roles = (rolesRows ?? []).map((r: { role: string }) => r.role);
-    const hasExplicitRole = roles.length > 0;
-    setRole(
-      roles.includes("admin")
-        ? "admin"
-        : roles.includes("member")
-        ? "member"
-        : hasExplicitRole
-        ? "visitor"
-        : null,
-    );
+
+    try {
+      const [{ data: prof }, { data: roleData }, { data: rolesRows }] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select("id, display_name, email, person_id")
+          .eq("id", u.id)
+          .maybeSingle(),
+        supabase.rpc("has_role", { _user_id: u.id, _role: "admin" }),
+        supabase.from("user_roles").select("role").eq("user_id", u.id),
+      ]);
+      setProfile(prof as Profile | null);
+      setIsAdmin(Boolean(roleData));
+      const roles = (rolesRows ?? []).map((r: { role: string }) => r.role);
+      const hasExplicitRole = roles.length > 0;
+      setRole(
+        roles.includes("admin")
+          ? "admin"
+          : roles.includes("member")
+          ? "member"
+          : hasExplicitRole
+          ? "visitor"
+          : null,
+      );
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s);
-      setUser(s?.user ?? null);
+      const nextUser = s?.user ?? null;
+      setUser(nextUser);
+      setLoading(true);
       // defer DB calls to avoid deadlock inside listener
-      setTimeout(() => refresh(s?.user ?? null), 0);
+      setTimeout(() => refresh(nextUser), 0);
     });
+
     supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setUser(data.session?.user ?? null);
-      refresh(data.session?.user ?? null).finally(() => setLoading(false));
+      const nextSession = data.session;
+      setSession(nextSession);
+      setUser(nextSession?.user ?? null);
+      setLoading(true);
+      refresh(nextSession?.user ?? null);
     });
+
     return () => sub.subscription.unsubscribe();
   }, [refresh]);
 
