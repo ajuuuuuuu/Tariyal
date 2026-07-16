@@ -51,10 +51,6 @@ export function PersonDetail({
   const isSelf = currentUserPersonId === person.id;
   const canEdit = Boolean(currentUserId) && (isAdmin || userRole === "member" || isSelf);
   const canAddWife = isAdmin && person.gender === "male";
-  const hasOriginLinks = parents.length > 0 || children.length > 0;
-  const hasMarriageLinks = spouses.length > 0;
-  const showOriginActions = isAdmin || canViewBirthFamily || hasOriginLinks;
-  const showMarriageActions = (isAdmin || userRole === "member") && (person.gender === "female" || person.gender === "other");
 
   const parents = relationships
     .filter((r) => r.type === "parent" && r.person2Id === person.id)
@@ -150,16 +146,6 @@ export function PersonDetail({
           {person.familyGroup && person.familyGroup !== MAIN_FAMILY && onViewBirthFamily && (isAdmin || canViewBirthFamily) && (
             <Button size="sm" variant="secondary" onClick={() => onViewBirthFamily(person.id)}>
               View birth family tree
-            </Button>
-          )}
-          {showOriginActions && (
-            <Button size="sm" variant="secondary" onClick={() => onViewBirthFamily?.(person.id)}>
-              {hasOriginLinks ? "Open origin family" : "Add family details"}
-            </Button>
-          )}
-          {showMarriageActions && (
-            <Button size="sm" variant="outline" onClick={() => setMode("addWife")}>
-              {hasMarriageLinks ? "Open marriage family" : "Add husband / in-laws"}
             </Button>
           )}
           <Button variant="outline" size="sm" onClick={() => setMode("suggest")}>

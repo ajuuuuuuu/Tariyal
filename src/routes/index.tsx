@@ -15,7 +15,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { MAIN_FAMILY } from "@/lib/family-data";
+import { MAIN_FAMILY, getTreeSwitchContext } from "@/lib/family-data";
 import { fetchFamily } from "@/lib/family-api";
 import { useAuth } from "@/hooks/use-auth";
 import { usePresence } from "@/hooks/use-presence";
@@ -51,8 +51,8 @@ function Index() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [highlightId, setHighlightId] = useState<string | null>(null);
-  const [branchPersonId, setBranchPersonId] = useState<string | null>(null);
-  const [branchMode, setBranchMode] = useState<"origin" | "marriage">("origin");
+  const [treeViewPersonId, setTreeViewPersonId] = useState<string | null>(null);
+  const [treeViewMode, setTreeViewMode] = useState<"birth" | "switch">("birth");
   const [joinOpen, setJoinOpen] = useState(false);
   const [pendingRequest, setPendingRequest] = useState(false);
 
@@ -66,7 +66,7 @@ function Index() {
     if (!user) {
       setPendingRequest(false);
       setSelectedId(null);
-      setBranchPersonId(null);
+      setTreeViewPersonId(null);
       return;
     }
     supabase
@@ -117,55 +117,27 @@ function Index() {
     [relationships, mainPersonIds],
   );
 
-  const branchPerson = branchPersonId
-    ? persons.find((p) => p.id === branchPersonId) ?? null
+  const treeViewPerson = treeViewPersonId
+    ? persons.find((p) => p.id === treeViewPersonId) ?? null
     : null;
-  const branchGroup = branchPerson?.familyGroup;
-  const branchPersons = useMemo(() => {
-    if (!branchPerson) return [];
-
-    const personIds = new Set<string>();
-    const personMap = new Map(persons.map((p) => [p.id, p]));
-
-    const collect = (currentId: string, depth = 0) => {
-      if (depth > 2) return;
-      const current = personMap.get(currentId);
-      if (!current) return;
-      personIds.add(current.id);
-
-      const parents = relationships
-        .filter((r) => r.type === "parent" && r.person2Id === current.id)
-        .map((r) => r.person1Id);
-      const children = relationships
-        .filter((r) => r.type === "parent" && r.person1Id === current.id)
-        .map((r) => r.person2Id);
-      const spouses = relationships
-        .filter((r) => r.type === "spouse" && (r.person1Id === current.id || r.person2Id === current.id))
-        .map((r) => (r.person1Id === current.id ? r.person2Id : r.person1Id));
-
-      if (branchMode === "origin") {
-        parents.forEach((id) => collect(id, depth + 1));
-        children.forEach((id) => collect(id, depth + 1));
-      } else {
-        spouses.forEach((id) => collect(id, depth + 1));
-      }
-    };
-
-    collect(branchPerson.id);
-
-    if (!personIds.size) {
-      personIds.add(branchPerson.id);
-    }
-
-    return Array.from(personIds, (id) => personMap.get(id)).filter(Boolean) as typeof persons;
-  }, [branchMode, branchPerson, persons, relationships]);
-  const branchIds = useMemo(() => new Set(branchPersons.map((p) => p.id)), [branchPersons]);
-  const branchRelationships = useMemo(
+  const treeViewContext = useMemo(
+    () => getTreeSwitchContext(treeViewPerson, persons, relationships),
+    [treeViewPerson, persons, relationships],
+  );
+  const treeViewPersons = useMemo(() => {
+    if (!treeViewPerson) return [];
+    const groupMembers = treeViewContext?.group
+      ? persons.filter((person) => (person.familyGroup ?? MAIN_FAMILY) === treeViewContext.group)
+      : [];
+    return Array.from(new Map([treeViewPerson, ...groupMembers].map((person) => [person.id, person])).values());
+  }, [persons, treeViewContext, treeViewPerson]);
+  const treeViewIds = useMemo(() => new Set(treeViewPersons.map((person) => person.id)), [treeViewPersons]);
+  const treeViewRelationships = useMemo(
     () =>
       relationships.filter(
-        (r) => branchIds.has(r.person1Id) && branchIds.has(r.person2Id),
+        (relationship) => treeViewIds.has(relationship.person1Id) && treeViewIds.has(relationship.person2Id),
       ),
-    [relationships, branchIds],
+    [relationships, treeViewIds],
   );
 
   const matches = useMemo(() => {
@@ -217,6 +189,11 @@ function Index() {
               setHighlightId(id);
               setSelectedId(id);
             }}
+            onSwitchTree={(id) => {
+              setTreeViewPersonId(id);
+              setTreeViewMode("switch");
+              setSelectedId(null);
+            }}
             highlightId={highlightId}
             relatedIds={relatedIds}
           />
@@ -239,8 +216,8 @@ function Index() {
               userRole={role}
               onClose={() => setSelectedId(null)}
               onViewBirthFamily={(id) => {
-                setBranchPersonId(id);
-                setBranchMode("origin");
+                setTreeViewPersonId(id);
+                setTreeViewMode("birth");
                 setSelectedId(null);
               }}
               onChanged={() => refetch()}
@@ -249,46 +226,31 @@ function Index() {
         </SheetContent>
       </Sheet>
 
-      <Dialog open={!!branchPerson} onOpenChange={(o) => !o && setBranchPersonId(null)}>
+      <Dialog open={!!treeViewPerson} onOpenChange={(o) => !o && setTreeViewPersonId(null)}>
         <DialogContent className="flex h-[80vh] max-w-5xl flex-col p-0">
           <DialogHeader className="shrink-0 border-b px-6 py-4">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <DialogTitle>
-                  {branchPerson?.name}'s {branchMode === "origin" ? "origin family" : "marriage family"}
-                  {branchGroup ? ` — the ${capitalize(branchGroup)}s` : ""}
-                </DialogTitle>
-                <DialogDescription>
-                  {branchMode === "origin"
-                    ? "Showing parents, children, and the surrounding birth-family branch."
-                    : "Showing spouses and the surrounding marriage-family branch."}
-                </DialogDescription>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setBranchMode("origin")}
-                  className={`rounded-full border px-3 py-1 text-sm ${branchMode === "origin" ? "bg-primary text-primary-foreground" : "bg-background"}`}
-                >
-                  Origin family
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setBranchMode("marriage")}
-                  className={`rounded-full border px-3 py-1 text-sm ${branchMode === "marriage" ? "bg-primary text-primary-foreground" : "bg-background"}`}
-                >
-                  Marriage family
-                </button>
-              </div>
-            </div>
+            <DialogTitle>
+              {treeViewPerson?.name}'s {treeViewContext?.title ?? "family tree"}
+              {treeViewContext?.group ? ` — the ${capitalize(treeViewContext.group)}s` : ""}
+            </DialogTitle>
+            <DialogDescription>
+              {treeViewContext?.description ?? "Highlighted within a related family tree."}
+            </DialogDescription>
           </DialogHeader>
           <div className="min-h-0 flex-1 w-full">
-            {branchPerson && (
+            {treeViewPerson && (
               <FamilyTree
-                persons={branchPersons}
-                relationships={branchRelationships}
-                onSelect={() => {}}
-                highlightId={branchPerson.id}
+                persons={treeViewPersons}
+                relationships={treeViewRelationships}
+                onSelect={(id) => {
+                  setHighlightId(id);
+                  setSelectedId(id);
+                }}
+                onOpen={(id) => {
+                  setHighlightId(id);
+                  setSelectedId(id);
+                }}
+                highlightId={treeViewPerson.id}
               />
             )}
           </div>

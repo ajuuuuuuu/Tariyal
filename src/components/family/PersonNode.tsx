@@ -10,6 +10,8 @@ interface NodeData {
   hasChildren?: boolean;
   collapsed?: boolean;
   onToggleCollapse?: (id: string) => void;
+  canSwitchTree?: boolean;
+  onSwitchTree?: (id: string) => void;
 }
 
 export function PersonNode({ data }: { data: NodeData }) {
@@ -105,6 +107,20 @@ export function PersonNode({ data }: { data: NodeData }) {
         <div className="text-xs text-muted-foreground">
           {getYear(p.birthDate) || "?"} – {getYear(p.deathDate) || ""}
         </div>
+      </div>
+      <div className="mt-2 flex w-full justify-center">
+        {data.canSwitchTree && data.onSwitchTree && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              data.onSwitchTree!(p.id);
+            }}
+            className="rounded-full border border-yellow-500/40 bg-yellow-500/10 px-2.5 py-1 text-[11px] font-medium text-yellow-700 transition hover:bg-yellow-500/20 dark:text-yellow-300"
+          >
+            Switch tree
+          </button>
+        )}
       </div>
       {data.hasChildren && data.onToggleCollapse && (
         <button
