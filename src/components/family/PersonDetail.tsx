@@ -150,7 +150,12 @@ export function PersonDetail({
             </Button>
           )}
           {currentPerson.gender === "female" && onViewBirthFamily && (
-            <Button size="sm" variant="secondary" onClick={() => onViewBirthFamily(currentPerson.id)}>
+            <Button
+              size="sm"
+              variant="secondary"
+              className="rounded-full border border-yellow-500/40 bg-yellow-500/10 px-2.5 py-1 text-[11px] font-medium text-yellow-700 transition hover:bg-yellow-500/20 dark:text-yellow-300"
+              onClick={() => onViewBirthFamily(currentPerson.id)}
+            >
               Switch tree
             </Button>
           )}
