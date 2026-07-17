@@ -289,6 +289,7 @@ function Index() {
             onSelect={(id) => setHighlightId(id)}
             onOpen={(id) => {
               setHighlightId(id);
+              setSelectedFromTree("main");
               setSelectedId(id);
             }}
             onSwitchTree={(id) => {
@@ -310,6 +311,7 @@ function Index() {
               persons={persons}
               relationships={relationships}
               isAdmin={isAdmin}
+              canManage={selectedFromTree === "switch" && isFamilyMember}
               currentUserPersonId={profile?.person_id ?? null}
               canViewBirthFamily={isFamilyMember}
               currentUserId={user?.id ?? null}
@@ -333,7 +335,9 @@ function Index() {
           <DialogHeader className="shrink-0 border-b px-6 py-4">
             <DialogTitle>
               {treeViewPerson?.name}'s {treeViewContext?.title ?? "family tree"}
-              {treeViewContext?.group ? ` — the ${capitalize(treeViewContext.group)}s` : ""}
+              {treeViewContext?.group && !treeViewContext.group.startsWith("personal-")
+                ? ` — the ${capitalize(treeViewContext.group)}s`
+                : ""}
             </DialogTitle>
             <DialogDescription>
               {treeViewContext?.description ?? "Highlighted within a related family tree."}
@@ -346,10 +350,12 @@ function Index() {
                 relationships={treeViewRelationships}
                 onSelect={(id) => {
                   setHighlightId(id);
+                  setSelectedFromTree("switch");
                   setSelectedId(id);
                 }}
                 onOpen={(id) => {
                   setHighlightId(id);
+                  setSelectedFromTree("switch");
                   setSelectedId(id);
                 }}
                 highlightId={treeViewPerson.id}
