@@ -215,7 +215,7 @@ export function PersonDetail({
           </Button>
           {canEdit && (
             <Button size="sm" onClick={() => setMode("edit")}>
-              {isAdmin ? "Edit" : "Request edit"}
+              {canManage ? "Edit" : "Request edit"}
             </Button>
           )}
           {canManage && (
