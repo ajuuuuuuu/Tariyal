@@ -75,7 +75,7 @@ export function PersonDetail({
   const currentPerson = person;
   const isSelf = currentUserPersonId === currentPerson.id;
   const canManage = isAdmin || Boolean(canManageProp && (userRole === "member" || userRole === "admin"));
-  const canEdit = Boolean(currentUserId) && (canManage || isSelf);
+  const canEdit = isAdmin || Boolean(currentUserId && (userRole === "member" || userRole === "admin" || isSelf));
   const canAddWife = canManage && currentPerson.gender === "male";
   const canAddHusband = canManage && currentPerson.gender === "female";
 
@@ -246,7 +246,7 @@ export function PersonDetail({
           </Button>
           {canEdit && (
             <Button size="sm" onClick={() => setMode("edit")}>
-              {canManage ? "Edit" : "Request edit"}
+              {isAdmin ? "Edit" : "Request edit"}
             </Button>
           )}
           {canManage && (
@@ -331,7 +331,7 @@ export function PersonDetail({
           initial={currentPerson}
           onCancel={() => setMode("view")}
           onSubmit={(data) => {
-            if (canManage) {
+            if (isAdmin) {
               void run(() => updatePerson(currentPerson.id, data));
               return;
             }
