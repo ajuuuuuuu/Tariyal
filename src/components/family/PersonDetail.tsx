@@ -80,8 +80,13 @@ export function PersonDetail({
       : null;
 
   const parentSiblingGroupFor = (person: Person) => {
+    // Ancestors/siblings stay in the same sub-tree as the person we're
+    // adding them to. If the person is already in a personal-* group,
+    // inherit that group verbatim — do NOT mint a new personal group per
+    // generation (that would isolate each ancestor into their own tree
+    // and hide them from the sub-tree view).
     if (person.familyGroup?.startsWith("personal-")) {
-      return personalGroupFor(person);
+      return person.familyGroup;
     }
     // If this person has no parents recorded in main tree, treat their
     // parents/siblings as belonging to their own personal tree (e.g., a
