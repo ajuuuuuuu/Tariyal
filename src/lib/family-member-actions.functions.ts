@@ -157,3 +157,72 @@ export const addFamilyRelative = createServerFn({ method: "POST" })
 
     throw new Error("Unsupported family action.");
   });
+
+const deleteRelativeSchema = z.object({
+  personId: z.string().min(1),
+});
+
+/**
+ * Delete a person that a family member added inside a personal/birth tree.
+ * Guardrails (enforced server-side even though the UI also checks):
+ *  - Caller must be a member or admin (not visitor-only).
+ *  - Target person's family_group must start with `personal-` (i.e. lives in
+ *    someone's personal/birth tree — never the main family).
+ *  - Target person must NOT be the root of that personal group (the person
+ *    whose id is embedded in the group name — usually the wife/daughter).
+ *  - Target person must have no children (no dangling subtree).
+ */
+export const deleteMemberAddedPerson = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) => deleteRelativeSchema.parse(data))
+  .handler(async ({ data, context }) => {
+    const { data: roleRows, error: roleError } = await context.supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", context.userId);
+    if (roleError) throw roleError;
+
+    const roles = (roleRows ?? []).map((row) => row.role);
+    const isVisitorOnly = roles.length > 0 && roles.every((role) => role === "visitor");
+    const canManage = !isVisitorOnly && (roles.length === 0 || roles.includes("member") || roles.includes("admin"));
+    if (!canManage) throw new Error("You need a family member account to delete relatives.");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: target, error: targetError } = await supabaseAdmin
+      .from("persons")
+      .select("id,family_group")
+      .eq("id", data.personId)
+      .single();
+    if (targetError) throw targetError;
+
+    const isAdmin = roles.includes("admin");
+    if (!isAdmin) {
+      const group = target.family_group ?? "";
+      if (!group.startsWith("personal-")) {
+        throw new Error("Members can only delete relatives inside a personal family tree.");
+      }
+      if (group === `personal-${target.id}`) {
+        throw new Error("The main person of a personal tree cannot be deleted here.");
+      }
+
+      const { data: children, error: childError } = await supabaseAdmin
+        .from("relationships")
+        .select("id")
+        .eq("type", "parent")
+        .eq("person1_id", target.id)
+        .limit(1);
+      if (childError) throw childError;
+      if ((children ?? []).length > 0) {
+        throw new Error("Remove this person's children first.");
+      }
+    }
+
+    const { error: delError } = await supabaseAdmin
+      .from("persons")
+      .delete()
+      .eq("id", data.personId);
+    if (delError) throw delError;
+
+    return { ok: true };
+  });
