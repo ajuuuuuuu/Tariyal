@@ -76,13 +76,19 @@ export function useAuth() {
   // member role but not yet linked. Derive these from existing data.
   const isFamilyMember = Boolean(profile?.person_id);
   const isNewMember = !!user && !isAdmin && !isFamilyMember && role !== "visitor";
-  const resolvedRole = isAdmin ? "admin" : isFamilyMember ? "member" : isNewMember ? "member" : role;
+  const resolvedRole: "admin" | "member" | "visitor" | null = isAdmin
+    ? "admin"
+    : isFamilyMember
+    ? "member"
+    : isNewMember
+    ? "member"
+    : role;
   return {
     session,
     user,
     profile,
     isAdmin,
-    role,
+    role: resolvedRole,
     isFamilyMember,
     isNewMember,
     loading,

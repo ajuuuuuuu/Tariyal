@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SuggestionForm } from "./SuggestionForm";
@@ -11,6 +12,7 @@ import {
   deletePerson,
   updatePerson,
 } from "@/lib/family-api";
+import { addFamilyRelative } from "@/lib/family-member-actions.functions";
 import { MAIN_FAMILY, type Person, type Relationship } from "@/lib/family-data";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -48,6 +50,7 @@ export function PersonDetail({
   onChanged: () => void;
 }) {
   const person = persons.find((p) => p.id === personId);
+  const addFamilyRelativeFn = useServerFn(addFamilyRelative);
   const [mode, setMode] = useState<
     | "view"
     | "suggest"
@@ -133,6 +136,25 @@ export function PersonDetail({
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed");
     }
+  }
+
+  type AddRelativeAction = "descendant" | "father" | "mother" | "brother" | "sister" | "wife" | "husband";
+
+  async function memberAddRelative(action: AddRelativeAction, data: Omit<Person, "id">) {
+    await addFamilyRelativeFn({
+      data: {
+        personId: currentPerson.id,
+        action,
+        person: {
+          name: data.name,
+          gender: data.gender,
+          birthDate: data.birthDate ?? null,
+          deathDate: data.deathDate ?? null,
+          photoUrl: data.photoUrl ?? null,
+          biography: data.biography ?? null,
+        },
+      },
+    });
   }
 
   async function submitEditRequest(data: Omit<Person, "id">) {
@@ -299,6 +321,10 @@ export function PersonDetail({
           onCancel={() => setMode("view")}
           onSubmit={(data) =>
             run(async () => {
+              if (!isAdmin) {
+                await memberAddRelative("descendant", data);
+                return;
+              }
               const familyGroupToUse =
                 currentPerson.familyGroup && currentPerson.familyGroup !== MAIN_FAMILY
                   ? currentPerson.familyGroup
@@ -315,6 +341,10 @@ export function PersonDetail({
           onCancel={() => setMode("view")}
           onSubmit={(data) =>
             run(async () => {
+              if (!isAdmin) {
+                await memberAddRelative("father", data);
+                return;
+              }
               const familyGroupToUse = parentSiblingGroupFor(currentPerson);
               const father = await addPerson({ ...data, gender: "male", familyGroup: familyGroupToUse });
               await addRelationship({ person1Id: father.id, person2Id: currentPerson.id, type: "parent" });
@@ -328,6 +358,10 @@ export function PersonDetail({
           onCancel={() => setMode("view")}
           onSubmit={(data) =>
             run(async () => {
+              if (!isAdmin) {
+                await memberAddRelative("mother", data);
+                return;
+              }
               const familyGroupToUse = parentSiblingGroupFor(currentPerson);
               const mother = await addPerson({ ...data, gender: "female", familyGroup: familyGroupToUse });
               await addRelationship({ person1Id: mother.id, person2Id: currentPerson.id, type: "parent" });
@@ -341,6 +375,10 @@ export function PersonDetail({
           onCancel={() => setMode("view")}
           onSubmit={(data) =>
             run(async () => {
+              if (!isAdmin) {
+                await memberAddRelative("brother", data);
+                return;
+              }
               const familyGroupToUse = parentSiblingGroupFor(currentPerson);
               const sibling = await addPerson({ ...data, gender: "male", familyGroup: familyGroupToUse });
               const parentRels = relationships.filter((r) => r.type === "parent" && r.person2Id === currentPerson.id);
@@ -361,6 +399,10 @@ export function PersonDetail({
           onCancel={() => setMode("view")}
           onSubmit={(data) =>
             run(async () => {
+              if (!isAdmin) {
+                await memberAddRelative("sister", data);
+                return;
+              }
               const familyGroupToUse = parentSiblingGroupFor(currentPerson);
               const sibling = await addPerson({ ...data, gender: "female", familyGroup: familyGroupToUse });
               const parentRels = relationships.filter((r) => r.type === "parent" && r.person2Id === currentPerson.id);
@@ -379,6 +421,10 @@ export function PersonDetail({
           onCancel={() => setMode("view")}
           onSubmit={(data) =>
             run(async () => {
+              if (!isAdmin) {
+                await memberAddRelative("wife", data);
+                return;
+              }
               const familyGroupToUse = personalGroupFor(currentPerson);
               await addWife(currentPerson.id, {
                 name: data.name,
@@ -398,6 +444,10 @@ export function PersonDetail({
           onCancel={() => setMode("view")}
           onSubmit={(data) =>
             run(async () => {
+              if (!isAdmin) {
+                await memberAddRelative("husband", data);
+                return;
+              }
               const familyGroupToUse = personalGroupFor(currentPerson);
               await addHusband(currentPerson.id, {
                 name: data.name,
