@@ -172,7 +172,9 @@ function Index() {
 
       extra = Array.from(ids)
         .map((id) => personById.get(id))
-        .filter(Boolean) as typeof persons;
+        .filter((p): p is (typeof persons)[number] =>
+          Boolean(p) && (p!.familyGroup ?? MAIN_FAMILY) !== MAIN_FAMILY,
+        );
     }
 
     return Array.from(
