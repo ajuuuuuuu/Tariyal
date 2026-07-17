@@ -158,6 +158,21 @@ export async function addWife(
   return person;
 }
 
+export async function addHusband(
+  wifeId: string,
+  husband: Omit<Person, "id" | "gender">,
+  sortOrder = 0,
+) {
+  const person = await addPerson({ ...husband, gender: "male" });
+  await addRelationship({
+    person1Id: wifeId,
+    person2Id: person.id,
+    type: "spouse",
+    sortOrder,
+  });
+  return person;
+}
+
 export async function removeSpouseLink(husbandId: string, wifeId: string) {
   const { error } = await supabase
     .from("relationships")

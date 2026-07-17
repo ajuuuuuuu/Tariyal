@@ -7,6 +7,7 @@ import {
   addPerson,
   addRelationship,
   addWife,
+  addHusband,
   deletePerson,
   updatePerson,
 } from "@/lib/family-api";
@@ -50,6 +51,7 @@ export function PersonDetail({
     | "edit"
     | "addDesc"
     | "addWife"
+    | "addHusband"
     | "addFather"
     | "addMother"
     | "addBrother"
@@ -62,6 +64,25 @@ export function PersonDetail({
   const isSelf = currentUserPersonId === currentPerson.id;
   const canEdit = Boolean(currentUserId) && (isAdmin || userRole === "member" || isSelf);
   const canAddWife = isAdmin && currentPerson.gender === "male";
+  const canAddHusband = isAdmin && currentPerson.gender === "female";
+
+  const personalGroupFor = (person: Person) => {
+    const ownPersonalGroup = `personal-${person.id}`;
+    if (person.familyGroup?.startsWith("personal-") && person.familyGroup !== ownPersonalGroup) {
+      return ownPersonalGroup;
+    }
+    return person.familyGroup && person.familyGroup !== MAIN_FAMILY ? person.familyGroup : ownPersonalGroup;
+  };
+
+  const personalGroupRootId = (person: Person) =>
+    person.familyGroup?.startsWith("personal-")
+      ? person.familyGroup.slice("personal-".length)
+      : null;
+
+  const parentSiblingGroupFor = (person: Person) =>
+    person.familyGroup?.startsWith("personal-")
+      ? personalGroupFor(person)
+      : MAIN_FAMILY;
 
   const parents = relationships
     .filter((r) => r.type === "parent" && r.person2Id === currentPerson.id)
@@ -187,6 +208,11 @@ export function PersonDetail({
                   Add wife
                 </Button>
               )}
+              {canAddHusband && (
+                <Button size="sm" variant="secondary" onClick={() => setMode("addHusband")}>
+                  Add husband
+                </Button>
+              )}
               <Button size="sm" variant="secondary" onClick={() => setMode("addFather")}>
                 Add father
               </Button>
@@ -267,10 +293,7 @@ export function PersonDetail({
           onCancel={() => setMode("view")}
           onSubmit={(data) =>
             run(async () => {
-              const familyGroupToUse =
-                currentPerson.familyGroup && currentPerson.familyGroup !== MAIN_FAMILY
-                  ? currentPerson.familyGroup
-                  : `personal-${currentPerson.id}`;
+              const familyGroupToUse = parentSiblingGroupFor(currentPerson);
               const father = await addPerson({ ...data, gender: "male", familyGroup: familyGroupToUse });
               await addRelationship({ person1Id: father.id, person2Id: currentPerson.id, type: "parent" });
             }, "Father added")
@@ -283,10 +306,7 @@ export function PersonDetail({
           onCancel={() => setMode("view")}
           onSubmit={(data) =>
             run(async () => {
-              const familyGroupToUse =
-                currentPerson.familyGroup && currentPerson.familyGroup !== MAIN_FAMILY
-                  ? currentPerson.familyGroup
-                  : `personal-${currentPerson.id}`;
+              const familyGroupToUse = parentSiblingGroupFor(currentPerson);
               const mother = await addPerson({ ...data, gender: "female", familyGroup: familyGroupToUse });
               await addRelationship({ person1Id: mother.id, person2Id: currentPerson.id, type: "parent" });
             }, "Mother added")
@@ -299,10 +319,7 @@ export function PersonDetail({
           onCancel={() => setMode("view")}
           onSubmit={(data) =>
             run(async () => {
-              const familyGroupToUse =
-                currentPerson.familyGroup && currentPerson.familyGroup !== MAIN_FAMILY
-                  ? currentPerson.familyGroup
-                  : `personal-${currentPerson.id}`;
+              const familyGroupToUse = parentSiblingGroupFor(currentPerson);
               const sibling = await addPerson({ ...data, gender: "male", familyGroup: familyGroupToUse });
               const parentRels = relationships.filter((r) => r.type === "parent" && r.person2Id === currentPerson.id);
               if (parentRels.length > 0) {
@@ -322,10 +339,7 @@ export function PersonDetail({
           onCancel={() => setMode("view")}
           onSubmit={(data) =>
             run(async () => {
-              const familyGroupToUse =
-                currentPerson.familyGroup && currentPerson.familyGroup !== MAIN_FAMILY
-                  ? currentPerson.familyGroup
-                  : `personal-${currentPerson.id}`;
+              const familyGroupToUse = parentSiblingGroupFor(currentPerson);
               const sibling = await addPerson({ ...data, gender: "female", familyGroup: familyGroupToUse });
               const parentRels = relationships.filter((r) => r.type === "parent" && r.person2Id === currentPerson.id);
               if (parentRels.length > 0) {
@@ -343,15 +357,35 @@ export function PersonDetail({
           onCancel={() => setMode("view")}
           onSubmit={(data) =>
             run(async () => {
+              const familyGroupToUse = personalGroupFor(currentPerson);
               await addWife(currentPerson.id, {
                 name: data.name,
                 birthDate: data.birthDate,
                 deathDate: data.deathDate,
                 photoUrl: data.photoUrl,
                 biography: data.biography,
-                familyGroup: currentPerson.familyGroup,
+                familyGroup: familyGroupToUse,
               });
             }, "Wife added")
+          }
+        />
+      )}
+      {mode === "addHusband" && (
+        <PersonEditor
+          initial={{ gender: "male" } as Person}
+          onCancel={() => setMode("view")}
+          onSubmit={(data) =>
+            run(async () => {
+              const familyGroupToUse = personalGroupFor(currentPerson);
+              await addHusband(currentPerson.id, {
+                name: data.name,
+                birthDate: data.birthDate,
+                deathDate: data.deathDate,
+                photoUrl: data.photoUrl,
+                biography: data.biography,
+                familyGroup: familyGroupToUse,
+              });
+            }, "Husband added")
           }
         />
       )}

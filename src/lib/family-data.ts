@@ -38,7 +38,9 @@ export function getTreeSwitchContext(
 ): TreeSwitchContext | null {
   if (!person) return null;
 
-  const birthGroup = person.familyGroup && person.familyGroup !== MAIN_FAMILY ? person.familyGroup : null;
+  const personalGroup = person.familyGroup?.startsWith("personal-") ? person.familyGroup : null;
+  const ownPersonalGroup = `personal-${person.id}`;
+  const birthGroup = !personalGroup && person.familyGroup && person.familyGroup !== MAIN_FAMILY ? person.familyGroup : null;
   const spouseIds = relationships
     .filter(
       (relationship) =>
@@ -53,16 +55,31 @@ export function getTreeSwitchContext(
     .map((id) => persons.find((candidate) => candidate.id === id))
     .filter((candidate): candidate is Person => Boolean(candidate));
 
+  if (personalGroup === ownPersonalGroup) {
+    return {
+      mode: "self",
+      group: personalGroup,
+      title: "Personal tree",
+      description: "Showing the personal tree for this person and their spouse-related relatives.",
+    };
+  }
+
   const marriedGroup = spousePeople.find(
-    (spouse) => spouse.familyGroup && spouse.familyGroup !== (person.familyGroup ?? MAIN_FAMILY),
+    (spouse) =>
+      spouse.familyGroup &&
+      !spouse.familyGroup.startsWith("personal-") &&
+      spouse.familyGroup !== (person.familyGroup ?? MAIN_FAMILY),
   )?.familyGroup ?? null;
 
   if (marriedGroup) {
+    const isPersonal = marriedGroup.startsWith("personal-");
     return {
-      mode: "married",
+      mode: isPersonal ? "self" : "married",
       group: marriedGroup,
-      title: "Married family tree",
-      description: "Showing the family tree of the family she married into.",
+      title: isPersonal ? "Personal tree" : "Married family tree",
+      description: isPersonal
+        ? "Showing the personal tree for this person and their spouse-related relatives."
+        : "Showing the family tree of the family she married into.",
     };
   }
 
@@ -77,7 +94,7 @@ export function getTreeSwitchContext(
 
   return {
     mode: "self",
-    group: `personal-${person.id}`,
+    group: ownPersonalGroup,
     title: "Personal tree",
     description: "Showing the personal tree for this person (their descendants/spouse added under them).",
   };

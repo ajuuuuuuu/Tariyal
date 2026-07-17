@@ -94,16 +94,8 @@ function Index() {
   }, [relationships, highlightId]);
 
   const mainPersonIds = useMemo(() => {
-    const ids = new Set(
-      persons.filter((p) => (p.familyGroup ?? MAIN_FAMILY) === MAIN_FAMILY).map((p) => p.id),
-    );
-    relationships.forEach((r) => {
-      if (r.type !== "spouse") return;
-      if (ids.has(r.person1Id)) ids.add(r.person2Id);
-      if (ids.has(r.person2Id)) ids.add(r.person1Id);
-    });
-    return ids;
-  }, [persons, relationships]);
+    return new Set(persons.filter((p) => (p.familyGroup ?? MAIN_FAMILY) === MAIN_FAMILY).map((p) => p.id));
+  }, [persons]);
 
   const mainPersons = useMemo(
     () => persons.filter((p) => mainPersonIds.has(p.id)),
@@ -129,8 +121,64 @@ function Index() {
     const groupMembers = treeViewContext?.group
       ? persons.filter((person) => (person.familyGroup ?? MAIN_FAMILY) === treeViewContext.group)
       : [];
-    return Array.from(new Map([treeViewPerson, ...groupMembers].map((person) => [person.id, person])).values());
-  }, [persons, treeViewContext, treeViewPerson]);
+
+    let extra: typeof persons = [];
+    if (treeViewContext?.mode === "self" && treeViewContext.group?.startsWith("personal-")) {
+      const personById = new Map(persons.map((p) => [p.id, p]));
+      const ids = new Set<string>();
+      const parentIds = relationships
+        .filter((r) => r.type === "parent" && r.person2Id === treeViewPerson.id)
+        .map((r) => r.person1Id);
+
+      parentIds.forEach((id) => ids.add(id));
+
+      const grandParentIds = new Set<string>();
+      parentIds.forEach((parentId) => {
+        relationships
+          .filter((r) => r.type === "parent" && r.person2Id === parentId)
+          .forEach((r) => {
+            ids.add(r.person1Id);
+            grandParentIds.add(r.person1Id);
+          });
+      });
+
+      const siblingIds = new Set<string>();
+      parentIds.forEach((parentId) => {
+        relationships
+          .filter((r) => r.type === "parent" && r.person1Id === parentId)
+          .forEach((r) => {
+            if (r.person2Id !== treeViewPerson.id) {
+              siblingIds.add(r.person2Id);
+              ids.add(r.person2Id);
+            }
+          });
+      });
+
+      grandParentIds.forEach((grandParentId) => {
+        relationships
+          .filter((r) => r.type === "parent" && r.person1Id === grandParentId)
+          .forEach((r) => {
+            if (!parentIds.includes(r.person2Id) && r.person2Id !== treeViewPerson.id) {
+              ids.add(r.person2Id);
+            }
+          });
+      });
+
+      siblingIds.forEach((siblingId) => {
+        relationships
+          .filter((r) => r.type === "parent" && r.person1Id === siblingId)
+          .forEach((r) => ids.add(r.person2Id));
+      });
+
+      extra = Array.from(ids)
+        .map((id) => personById.get(id))
+        .filter(Boolean) as typeof persons;
+    }
+
+    return Array.from(
+      new Map([treeViewPerson, ...groupMembers, ...extra].map((person) => [person.id, person])).values(),
+    );
+  }, [persons, treeViewContext, treeViewPerson, relationships]);
   const treeViewIds = useMemo(() => new Set(treeViewPersons.map((person) => person.id)), [treeViewPersons]);
   const treeViewRelationships = useMemo(
     () =>
