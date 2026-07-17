@@ -40,7 +40,11 @@ export function getTreeSwitchContext(
 
   const personalGroup = person.familyGroup?.startsWith("personal-") ? person.familyGroup : null;
   const ownPersonalGroup = `personal-${person.id}`;
-  const birthGroup = !personalGroup && person.familyGroup && person.familyGroup !== MAIN_FAMILY ? person.familyGroup : null;
+  const birthGroup =
+    !personalGroup && person.familyGroup && person.familyGroup !== MAIN_FAMILY
+      ? person.familyGroup
+      : null;
+
   const spouseIds = relationships
     .filter(
       (relationship) =>
@@ -55,19 +59,46 @@ export function getTreeSwitchContext(
     .map((id) => persons.find((candidate) => candidate.id === id))
     .filter((candidate): candidate is Person => Boolean(candidate));
 
+  const isFemale = person.gender === "female";
+
+  // Case 1: person lives in someone else's personal group (typical for a
+  // married-in wife whose familyGroup = `personal-{husbandId}`). Her switch
+  // tree is her BIRTH TREE — her own parents/siblings and their descendants.
+  if (personalGroup && personalGroup !== ownPersonalGroup) {
+    return {
+      mode: "self",
+      group: personalGroup,
+      title: isFemale ? "Birth tree" : "Personal tree",
+      description: isFemale
+        ? "Showing her birth family — parents, siblings, and their descendants."
+        : "Showing this person's related tree.",
+    };
+  }
+
+  // Case 2: person is the anchor of their own personal group.
   if (personalGroup === ownPersonalGroup) {
     return {
       mode: "self",
       group: personalGroup,
-      title: "Personal tree",
-      description: "Showing the personal tree for this person and their spouse-related relatives.",
+      title: isFemale ? "Birth tree" : "Personal tree",
+      description: "Showing this person's personal tree.",
     };
   }
 
+  // Case 3: person is in a non-main birth group (e.g., a distinct lineage).
+  if (birthGroup) {
+    return {
+      mode: "birth",
+      group: birthGroup,
+      title: "Birth tree",
+      description: "Showing her birth family tree.",
+    };
+  }
+
+  // Case 4: person is in MAIN_FAMILY. Look for a husband's tree.
   const marriedGroup = spousePeople.find(
     (spouse) =>
       spouse.familyGroup &&
-      !spouse.familyGroup.startsWith("personal-") &&
       spouse.familyGroup !== (person.familyGroup ?? MAIN_FAMILY),
   )?.familyGroup ?? null;
 
@@ -76,26 +107,17 @@ export function getTreeSwitchContext(
     return {
       mode: isPersonal ? "self" : "married",
       group: marriedGroup,
-      title: isPersonal ? "Personal tree" : "Married family tree",
-      description: isPersonal
-        ? "Showing the personal tree for this person and their spouse-related relatives."
-        : "Showing the family tree of the family she married into.",
-    };
-  }
-
-  if (birthGroup) {
-    return {
-      mode: "birth",
-      group: birthGroup,
-      title: "Birth family tree",
-      description: "Showing her birth family tree.",
+      title: isFemale ? "Husband birth tree" : "Married family tree",
+      description: isFemale
+        ? "Showing her husband's family/birth tree."
+        : "Showing the family tree she married into.",
     };
   }
 
   return {
     mode: "self",
     group: ownPersonalGroup,
-    title: "Personal tree",
+    title: isFemale ? "Birth tree" : "Personal tree",
     description: "Showing the personal tree for this person (their descendants/spouse added under them).",
   };
 }

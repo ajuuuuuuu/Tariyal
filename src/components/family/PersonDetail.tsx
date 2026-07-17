@@ -20,6 +20,7 @@ export function PersonDetail({
   persons,
   relationships,
   isAdmin,
+  canManage: canManageProp,
   currentUserPersonId = null,
   canViewBirthFamily = false,
   currentUserId = null,
@@ -34,6 +35,8 @@ export function PersonDetail({
   persons: Person[];
   relationships: Relationship[];
   isAdmin: boolean;
+  /** When true, non-admin members can add/edit nodes here (e.g. inside a personal/birth tree view). */
+  canManage?: boolean;
   currentUserPersonId?: string | null;
   canViewBirthFamily?: boolean;
   currentUserId?: string | null;
@@ -62,9 +65,10 @@ export function PersonDetail({
 
   const currentPerson = person;
   const isSelf = currentUserPersonId === currentPerson.id;
-  const canEdit = Boolean(currentUserId) && (isAdmin || userRole === "member" || isSelf);
-  const canAddWife = isAdmin && currentPerson.gender === "male";
-  const canAddHusband = isAdmin && currentPerson.gender === "female";
+  const canManage = isAdmin || Boolean(canManageProp && (userRole === "member" || userRole === "admin"));
+  const canEdit = Boolean(currentUserId) && (canManage || isSelf);
+  const canAddWife = canManage && currentPerson.gender === "male";
+  const canAddHusband = canManage && currentPerson.gender === "female";
 
   const personalGroupFor = (person: Person) => {
     const ownPersonalGroup = `personal-${person.id}`;
@@ -211,10 +215,10 @@ export function PersonDetail({
           </Button>
           {canEdit && (
             <Button size="sm" onClick={() => setMode("edit")}>
-              {isAdmin ? "Edit" : "Request edit"}
+              {canManage ? "Edit" : "Request edit"}
             </Button>
           )}
-          {isAdmin && (
+          {canManage && (
             <>
               <Button size="sm" variant="secondary" onClick={() => setMode("addDesc")}>
                 Add descendant
@@ -241,20 +245,22 @@ export function PersonDetail({
               <Button size="sm" variant="secondary" onClick={() => setMode("addSister")}>
                 Add sister
               </Button>
-              <Button
-                size="sm"
-                variant="destructive"
-                onClick={() => {
-                  if (confirm(`Delete ${currentPerson.name}?`)) {
-                    run(async () => {
-                      await deletePerson(currentPerson.id);
-                      onClose();
-                    }, "Deleted");
-                  }
-                }}
-              >
-                Delete
-              </Button>
+              {isAdmin && (
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => {
+                    if (confirm(`Delete ${currentPerson.name}?`)) {
+                      run(async () => {
+                        await deletePerson(currentPerson.id);
+                        onClose();
+                      }, "Deleted");
+                    }
+                  }}
+                >
+                  Delete
+                </Button>
+              )}
             </>
           )}
         </div>
@@ -275,7 +281,7 @@ export function PersonDetail({
           initial={currentPerson}
           onCancel={() => setMode("view")}
           onSubmit={(data) => {
-            if (isAdmin) {
+            if (canManage) {
               void run(() => updatePerson(currentPerson.id, data));
               return;
             }
