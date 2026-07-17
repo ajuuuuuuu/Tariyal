@@ -94,7 +94,7 @@ function Index() {
   }, [relationships, highlightId]);
 
   const mainPersonIds = useMemo(() => {
-    return new Set(persons.filter((p) => (p.familyGroup ?? MAIN_FAMILY) === MAIN_FAMILY).map((p) => p.id));
+    return new Set(persons.filter((p) => p.familyGroup === MAIN_FAMILY).map((p) => p.id));
   }, [persons]);
 
   const mainPersons = useMemo(
