@@ -21,7 +21,7 @@ export async function trackPageVisit() {
   try {
     const { data } = await supabase.auth.getSession();
     const visitorId = data.session?.user?.id ?? getOrCreateVisitorId();
-    const { error } = await supabase.from("page_visits").insert({ visitor_id: visitorId });
+    const { error } = await (supabase.from("page_visits" as never) as any).insert({ visitor_id: visitorId });
 
     if (error) {
       if (error.code !== "42P01") {
