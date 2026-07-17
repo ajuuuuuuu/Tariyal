@@ -79,10 +79,21 @@ export function PersonDetail({
       ? person.familyGroup.slice("personal-".length)
       : null;
 
-  const parentSiblingGroupFor = (person: Person) =>
-    person.familyGroup?.startsWith("personal-")
-      ? personalGroupFor(person)
-      : MAIN_FAMILY;
+  const parentSiblingGroupFor = (person: Person) => {
+    if (person.familyGroup?.startsWith("personal-")) {
+      return personalGroupFor(person);
+    }
+    // If this person has no parents recorded in main tree, treat their
+    // parents/siblings as belonging to their own personal tree (e.g., a
+    // spouse who married into the main family).
+    const hasParentsInMain = relationships.some(
+      (r) => r.type === "parent" && r.person2Id === person.id,
+    );
+    if (!hasParentsInMain && (person.familyGroup ?? MAIN_FAMILY) === MAIN_FAMILY) {
+      return personalGroupFor(person);
+    }
+    return person.familyGroup ?? MAIN_FAMILY;
+  };
 
   const parents = relationships
     .filter((r) => r.type === "parent" && r.person2Id === currentPerson.id)
