@@ -94,8 +94,59 @@ function Index() {
   }, [relationships, highlightId]);
 
   const mainPersonIds = useMemo(() => {
-    return new Set(persons.filter((p) => p.familyGroup === MAIN_FAMILY).map((p) => p.id));
-  }, [persons]);
+    // All persons flagged as MAIN_FAMILY. From these we keep only the
+    // largest blood-connected component (parent/child edges) + their spouses.
+    // A married-in wife's parents/siblings form their own blood component
+    // and get excluded from the main tree.
+    const pool = persons.filter((p) => p.familyGroup === MAIN_FAMILY);
+    const poolIds = new Set(pool.map((p) => p.id));
+    if (pool.length === 0) return new Set<string>();
+
+    // Blood-only adjacency (parent edges) within the pool.
+    const bloodAdj = new Map<string, Set<string>>();
+    pool.forEach((p) => bloodAdj.set(p.id, new Set()));
+    relationships.forEach((r) => {
+      if (r.type !== "parent") return;
+      if (!poolIds.has(r.person1Id) || !poolIds.has(r.person2Id)) return;
+      bloodAdj.get(r.person1Id)!.add(r.person2Id);
+      bloodAdj.get(r.person2Id)!.add(r.person1Id);
+    });
+
+    // Find connected components.
+    const visited = new Set<string>();
+    const components: string[][] = [];
+    for (const p of pool) {
+      if (visited.has(p.id)) continue;
+      const comp: string[] = [];
+      const stack = [p.id];
+      while (stack.length) {
+        const cur = stack.pop()!;
+        if (visited.has(cur)) continue;
+        visited.add(cur);
+        comp.push(cur);
+        bloodAdj.get(cur)!.forEach((n) => {
+          if (!visited.has(n)) stack.push(n);
+        });
+      }
+      components.push(comp);
+    }
+
+    // Pick the largest blood component as the main lineage.
+    components.sort((a, b) => b.length - a.length);
+    const mainBlood = new Set(components[0] ?? []);
+
+    // Include spouses (in the pool) of anyone in the main blood component.
+    const result = new Set(mainBlood);
+    relationships.forEach((r) => {
+      if (r.type !== "spouse") return;
+      if (!poolIds.has(r.person1Id) || !poolIds.has(r.person2Id)) return;
+      if (mainBlood.has(r.person1Id)) result.add(r.person2Id);
+      if (mainBlood.has(r.person2Id)) result.add(r.person1Id);
+    });
+
+    return result;
+  }, [persons, relationships]);
+
 
   const mainPersons = useMemo(
     () => persons.filter((p) => mainPersonIds.has(p.id)),
