@@ -12,9 +12,14 @@ import {
   deletePerson,
   updatePerson,
 } from "@/lib/family-api";
-import { addFamilyRelative } from "@/lib/family-member-actions.functions";
+import { addFamilyRelative, deleteMemberAddedPerson } from "@/lib/family-member-actions.functions";
 import { MAIN_FAMILY, type Person, type Relationship } from "@/lib/family-data";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  recordMemberCreatedPerson,
+  forgetMemberCreatedPerson,
+  isMemberCreatedPerson,
+} from "@/lib/member-created-persons";
 import { toast } from "sonner";
 
 export function PersonDetail({
@@ -51,6 +56,7 @@ export function PersonDetail({
 }) {
   const person = persons.find((p) => p.id === personId);
   const addFamilyRelativeFn = useServerFn(addFamilyRelative);
+  const deleteMemberAddedPersonFn = useServerFn(deleteMemberAddedPerson);
   const [mode, setMode] = useState<
     | "view"
     | "suggest"
@@ -141,7 +147,7 @@ export function PersonDetail({
   type AddRelativeAction = "descendant" | "father" | "mother" | "brother" | "sister" | "wife" | "husband";
 
   async function memberAddRelative(action: AddRelativeAction, data: Omit<Person, "id">) {
-    await addFamilyRelativeFn({
+    const result = await addFamilyRelativeFn({
       data: {
         personId: currentPerson.id,
         action,
@@ -155,6 +161,9 @@ export function PersonDetail({
         },
       },
     });
+    // Remember which nodes this member added so we can offer Delete later.
+    const newId = (result as { id?: string } | undefined)?.id;
+    if (newId) recordMemberCreatedPerson(currentUserId, newId);
   }
 
   async function submitEditRequest(data: Omit<Person, "id">) {
