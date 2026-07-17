@@ -10,7 +10,6 @@ export interface Person {
   photoUrl?: string;
   biography?: string;
   familyGroup?: string;
-  createdBy?: string | null;
 }
 
 export type RelationshipType = "parent" | "spouse";

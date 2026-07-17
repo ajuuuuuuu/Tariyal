@@ -10,7 +10,6 @@ function rowToPerson(r: {
   family_group: string;
   photo_url?: string | null;
   biography?: string | null;
-  created_by?: string | null;
 }): Person {
   return {
     id: r.id,
@@ -21,7 +20,6 @@ function rowToPerson(r: {
     photoUrl: r.photo_url ?? undefined,
     biography: r.biography ?? undefined,
     familyGroup: r.family_group,
-    createdBy: r.created_by ?? null,
   };
 }
 
@@ -48,9 +46,7 @@ export async function fetchFamily(): Promise<{
   const [{ data: pData, error: pErr }, { data: rData, error: rErr }] =
     await Promise.all([
       // Only load essential columns - no images or biography
-      supabase
-        .from("persons")
-        .select("id,name,gender,birth_date,death_date,family_group,created_by"),
+      supabase.from("persons").select("id,name,gender,birth_date,death_date,family_group"),
       supabase.from("relationships").select("id,person1_id,person2_id,type,sort_order"),
     ]);
   if (pErr) throw pErr;
