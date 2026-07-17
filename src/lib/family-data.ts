@@ -77,8 +77,8 @@ export function getTreeSwitchContext(
 
   return {
     mode: "self",
-    group: null,
+    group: `personal-${person.id}`,
     title: "Personal tree",
-    description: "No additional family information is available yet, so only her node is shown.",
+    description: "Showing the personal tree for this person (their descendants/spouse added under them).",
   };
 }

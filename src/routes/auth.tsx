@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
+import { lovable } from "@/integrations/lovable/index";
 import { toast } from "sonner";
 import { ShieldCheck, Users, Eye } from "lucide-react";
 
@@ -22,30 +22,10 @@ function AuthPage() {
   const [tab, setTab] = useState<TabId>("family");
 
   useEffect(() => {
-    let active = true;
-
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (active && session?.user) {
-        window.location.assign("/");
-      }
-    });
-
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("error")) {
-      toast.error(params.get("error_description") ?? "Authentication failed");
-    }
-
     supabase.auth.getSession().then(({ data }) => {
-      if (active && data.session?.user) {
-        window.location.assign("/");
-      }
+      if (data.session) navigate({ to: "/" });
     });
-
-    return () => {
-      active = false;
-      sub.subscription.unsubscribe();
-    };
-  }, []);
+  }, [navigate]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4 py-10">
@@ -174,23 +154,9 @@ function FamilySignIn({ onDone }: { onDone: () => void }) {
       const result = await lovable.auth.signInWithOAuth("google", {
         redirect_uri: window.location.origin,
       });
-
-      if (result.error) {
-        throw result.error;
-      }
-
-      if (result.redirected) {
-        return;
-      }
-
-      if (result.tokens?.access_token) {
-        const { error } = await supabase.auth.setSession(result.tokens);
-        if (error) throw error;
-      }
-
-      window.location.assign("/");
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Google sign-in failed");
+      if (result.error) { toast.error("Google sign-in failed"); return; }
+      if (result.redirected) return;
+      onDone();
     } finally {
       setLoading(false);
     }

@@ -34,12 +34,6 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const { user, profile, isAdmin, role, isFamilyMember, signOut, refreshProfile } = useAuth();
-
-  useEffect(() => {
-    if (user) {
-      void refreshProfile();
-    }
-  }, [user, refreshProfile]);
   usePresence({
     userId: user?.id ?? null,
     displayName: profile?.display_name ?? user?.email ?? "Guest",
