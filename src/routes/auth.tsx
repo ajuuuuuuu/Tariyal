@@ -143,7 +143,13 @@ function FamilySignIn({ onDone }: { onDone: () => void }) {
       }
       onDone();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Authentication failed");
+      const raw = err instanceof Error ? err.message : "Authentication failed";
+      const status = (err as { status?: number } | null)?.status;
+      const friendly =
+        status === 429 || /rate|too many|429/i.test(raw)
+          ? "Too many attempts. Please wait a minute and try again."
+          : raw;
+      toast.error(friendly);
     } finally {
       setLoading(false);
     }
