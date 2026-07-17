@@ -222,10 +222,12 @@ function Index() {
           .forEach((r) => ids.add(r.person2Id));
       });
 
+      const canShowMainFamilyBirthRelatives = treeViewContext?.title === "Birth tree";
+
       extra = Array.from(ids)
         .map((id) => personById.get(id))
         .filter((p): p is (typeof persons)[number] =>
-          Boolean(p) && (p!.familyGroup ?? MAIN_FAMILY) !== MAIN_FAMILY,
+          Boolean(p) && (canShowMainFamilyBirthRelatives || (p!.familyGroup ?? MAIN_FAMILY) !== MAIN_FAMILY),
         );
     }
 

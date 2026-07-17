@@ -78,7 +78,10 @@ export function FamilyTree({
     [nodes, hasChildrenOf, collapsed, toggleCollapse, highlightId, relatedIds],
   );
 
-  const [rfKey] = useState(() => Math.random());
+  const rfKey = useMemo(
+    () => `${persons.map((person) => person.id).join("|")}:${relationships.map((relationship) => relationship.id).join("|")}`,
+    [persons, relationships],
+  );
   const isMobile = useIsMobile();
 
   return (
