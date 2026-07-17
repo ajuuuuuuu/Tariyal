@@ -33,7 +33,8 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const { user, profile, isAdmin, role, isFamilyMember, signOut, refreshProfile } = useAuth();
+  const { user, profile, isAdmin, role, isFamilyMember, isNewMember, signOut, refreshProfile } = useAuth();
+  const canUseMemberTools = isFamilyMember || isNewMember || role === "member" || isAdmin;
   usePresence({
     userId: user?.id ?? null,
     displayName: profile?.display_name ?? user?.email ?? "Guest",
@@ -322,9 +323,9 @@ function Index() {
               persons={persons}
               relationships={relationships}
               isAdmin={isAdmin}
-              canManage={selectedFromTree === "switch" && isFamilyMember}
+                canManage={selectedFromTree === "switch" && canUseMemberTools}
               currentUserPersonId={profile?.person_id ?? null}
-              canViewBirthFamily={isFamilyMember}
+                canViewBirthFamily={canUseMemberTools}
               currentUserId={user?.id ?? null}
               currentUserName={profile?.display_name ?? ""}
               currentUserEmail={user?.email ?? ""}
