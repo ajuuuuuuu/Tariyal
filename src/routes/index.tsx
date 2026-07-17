@@ -221,13 +221,22 @@ function Index() {
           .filter((r) => r.type === "parent" && r.person1Id === siblingId)
           .forEach((r) => ids.add(r.person2Id));
       });
+      // Add spouses of the focal person
+      relationships
+        .filter((r) => r.type === "spouse" && (r.person1Id === treeViewPerson.id || r.person2Id === treeViewPerson.id))
+        .forEach((r) => ids.add(r.person1Id === treeViewPerson.id ? r.person2Id : r.person1Id));
+
+      // Add children of the focal person
+      relationships
+        .filter((r) => r.type === "parent" && r.person1Id === treeViewPerson.id)
+        .forEach((r) => ids.add(r.person2Id));
 
       const canShowMainFamilyBirthRelatives = treeViewContext?.title === "Birth tree";
 
       extra = Array.from(ids)
         .map((id) => personById.get(id))
         .filter((p): p is (typeof persons)[number] =>
-          Boolean(p) && (true /* Allow all related people regardless of familyGroup in personal views */),
+          Boolean(p),
         );
     }
 
