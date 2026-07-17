@@ -57,7 +57,7 @@ export function FamilyTree({
             hasChildren: hasChildrenOf.has(n.id),
             collapsed: collapsed.has(n.id),
             onToggleCollapse: toggleCollapse,
-            canSwitchTree: Boolean(switchContext),
+            canSwitchTree: Boolean(onSwitchTree && switchContext && n.data.person.gender === "female"),
             onSwitchTree,
           },
         };
@@ -75,7 +75,7 @@ export function FamilyTree({
         }
         return base;
       }),
-    [nodes, hasChildrenOf, collapsed, toggleCollapse, highlightId, relatedIds],
+    [nodes, persons, relationships, hasChildrenOf, collapsed, toggleCollapse, onSwitchTree, highlightId, relatedIds],
   );
 
   const rfKey = useMemo(
