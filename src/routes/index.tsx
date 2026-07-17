@@ -33,7 +33,8 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const { user, profile, isAdmin, role, isFamilyMember, signOut, refreshProfile } = useAuth();
+  const { user, profile, isAdmin, role, isFamilyMember, isNewMember, signOut, refreshProfile } = useAuth();
+  const canUseMemberTools = isFamilyMember || isNewMember || role === "member" || isAdmin;
   usePresence({
     userId: user?.id ?? null,
     displayName: profile?.display_name ?? user?.email ?? "Guest",
@@ -221,13 +222,22 @@ function Index() {
           .filter((r) => r.type === "parent" && r.person1Id === siblingId)
           .forEach((r) => ids.add(r.person2Id));
       });
+      // Add spouses of the focal person
+      relationships
+        .filter((r) => r.type === "spouse" && (r.person1Id === treeViewPerson.id || r.person2Id === treeViewPerson.id))
+        .forEach((r) => ids.add(r.person1Id === treeViewPerson.id ? r.person2Id : r.person1Id));
+
+      // Add children of the focal person
+      relationships
+        .filter((r) => r.type === "parent" && r.person1Id === treeViewPerson.id)
+        .forEach((r) => ids.add(r.person2Id));
 
       const canShowMainFamilyBirthRelatives = treeViewContext?.title === "Birth tree";
 
       extra = Array.from(ids)
         .map((id) => personById.get(id))
         .filter((p): p is (typeof persons)[number] =>
-          Boolean(p) && (canShowMainFamilyBirthRelatives || (p!.familyGroup ?? MAIN_FAMILY) !== MAIN_FAMILY),
+          Boolean(p),
         );
     }
 
@@ -313,9 +323,9 @@ function Index() {
               persons={persons}
               relationships={relationships}
               isAdmin={isAdmin}
-              canManage={selectedFromTree === "switch" && isFamilyMember}
+                canManage={selectedFromTree === "switch" && canUseMemberTools}
               currentUserPersonId={profile?.person_id ?? null}
-              canViewBirthFamily={isFamilyMember}
+                canViewBirthFamily={canUseMemberTools}
               currentUserId={user?.id ?? null}
               currentUserName={profile?.display_name ?? ""}
               currentUserEmail={user?.email ?? ""}
@@ -359,6 +369,11 @@ function Index() {
                   setHighlightId(id);
                   setSelectedFromTree("switch");
                   setSelectedId(id);
+                }}
+                onSwitchTree={(id) => {
+                  setTreeViewPersonId(id);
+                  setTreeViewMode("switch");
+                  setSelectedId(null);
                 }}
                 highlightId={treeViewPerson.id}
               />

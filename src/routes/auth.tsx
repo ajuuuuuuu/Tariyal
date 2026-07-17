@@ -119,26 +119,31 @@ function FamilySignIn({ onDone }: { onDone: () => void }) {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    const normalizedEmail = email.trim().toLowerCase();
     setLoading(true);
     try {
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
-          email,
+        const { data, error } = await supabase.auth.signUp({
+          email: normalizedEmail,
           password,
           options: {
-            emailRedirectTo: window.location.origin,
-            data: { display_name: name.trim() || email },
+            emailRedirectTo: `${window.location.origin}/auth`,
+            data: { display_name: name.trim() || normalizedEmail },
           },
         });
         if (error) throw error;
 
-        await supabase.auth.signOut();
-        toast.success("Account created. Please sign in with your email and password.");
+        if (data.session) {
+          await supabase.auth.signOut();
+          toast.success("Account created. Please sign in with your email and password.");
+        } else {
+          toast.success("Account created. Please verify your email, then sign in.");
+        }
         setMode("signin");
         setPassword("");
         return;
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
         if (error) throw error;
       }
       onDone();
@@ -148,6 +153,8 @@ function FamilySignIn({ onDone }: { onDone: () => void }) {
       const friendly =
         status === 429 || /rate|too many|429/i.test(raw)
           ? "Too many attempts. Please wait a minute and try again."
+          : /email.*not.*confirm|confirm.*email|not confirmed/i.test(raw)
+          ? "Please verify your email first, then sign in with the same email and password."
           : raw;
       toast.error(friendly);
     } finally {

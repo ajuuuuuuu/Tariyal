@@ -1,5 +1,5 @@
 import { Handle, Position } from "reactflow";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, GitFork } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import type { Person } from "@/lib/family-data";
 import { getYear } from "@/lib/tree-layout";
@@ -124,6 +124,20 @@ export function PersonNode({ data }: { data: NodeData }) {
           ) : (
             <ChevronUp className="h-3.5 w-3.5" />
           )}
+        </button>
+      )}
+      {data.canSwitchTree && data.onSwitchTree && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            data.onSwitchTree?.(p.id);
+          }}
+          className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full border bg-card text-muted-foreground shadow-sm transition hover:bg-accent hover:text-foreground"
+          aria-label={`Switch tree for ${p.name}`}
+          title="Switch tree"
+        >
+          <GitFork className="h-3.5 w-3.5" />
         </button>
       )}
     </div>
