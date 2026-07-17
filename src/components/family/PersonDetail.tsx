@@ -281,7 +281,7 @@ export function PersonDetail({
           initial={currentPerson}
           onCancel={() => setMode("view")}
           onSubmit={(data) => {
-            if (isAdmin) {
+            if (canManage) {
               void run(() => updatePerson(currentPerson.id, data));
               return;
             }
