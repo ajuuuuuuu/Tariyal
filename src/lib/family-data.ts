@@ -94,8 +94,9 @@ export function getTreeSwitchContext(
 
   return {
     mode: "self",
-    group: ownPersonalGroup,
+    group: personalGroup ?? ownPersonalGroup,
     title: "Personal tree",
     description: "Showing the personal tree for this person (their descendants/spouse added under them).",
   };
+
 }
