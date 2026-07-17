@@ -276,7 +276,7 @@ export function PersonDetail({
               <Button size="sm" variant="secondary" onClick={() => setMode("addSister")}>
                 Add sister
               </Button>
-              {isAdmin && (
+              {isAdmin ? (
                 <Button
                   size="sm"
                   variant="destructive"
@@ -284,6 +284,7 @@ export function PersonDetail({
                     if (confirm(`Delete ${currentPerson.name}?`)) {
                       run(async () => {
                         await deletePerson(currentPerson.id);
+                        forgetMemberCreatedPerson(currentUserId, currentPerson.id);
                         onClose();
                       }, "Deleted");
                     }
@@ -291,6 +292,24 @@ export function PersonDetail({
                 >
                   Delete
                 </Button>
+              ) : (
+                isMemberCreatedPerson(currentUserId, currentPerson.id) && (
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => {
+                      if (confirm(`Delete ${currentPerson.name}?`)) {
+                        run(async () => {
+                          await deleteMemberAddedPersonFn({ data: { personId: currentPerson.id } });
+                          forgetMemberCreatedPerson(currentUserId, currentPerson.id);
+                          onClose();
+                        }, "Deleted");
+                      }
+                    }}
+                  >
+                    Delete
+                  </Button>
+                )
               )}
             </>
           )}
