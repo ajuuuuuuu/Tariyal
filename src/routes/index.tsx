@@ -227,7 +227,7 @@ function Index() {
       extra = Array.from(ids)
         .map((id) => personById.get(id))
         .filter((p): p is (typeof persons)[number] =>
-          Boolean(p) && (canShowMainFamilyBirthRelatives || (p!.familyGroup ?? MAIN_FAMILY) !== MAIN_FAMILY),
+          Boolean(p) && (true /* Allow all related people regardless of familyGroup in personal views */),
         );
     }
 
