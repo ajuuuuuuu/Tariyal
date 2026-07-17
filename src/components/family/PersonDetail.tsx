@@ -80,19 +80,24 @@ export function PersonDetail({
       : null;
 
   const parentSiblingGroupFor = (person: Person) => {
-    if (person.familyGroup?.startsWith("personal-")) {
-      return personalGroupFor(person);
+    // Keep parents/siblings in the SAME family group the person already
+    // belongs to, so they show up in whatever tree the person is visible in.
+    // A married-in spouse whose familyGroup is `personal-{husbandId}` needs
+    // her parents in that same group — not a brand-new `personal-{wifeId}`
+    // group that no tree renders.
+    if (person.familyGroup && person.familyGroup !== MAIN_FAMILY) {
+      return person.familyGroup;
     }
-    // If this person has no parents recorded in main tree, treat their
-    // parents/siblings as belonging to their own personal tree (e.g., a
-    // spouse who married into the main family).
+    // Person is in the main family. If they have no parents in the main tree
+    // yet (e.g., a married-in spouse still tagged MAIN_FAMILY), fall back to
+    // their own personal group so a mini birth-family tree can form.
     const hasParentsInMain = relationships.some(
       (r) => r.type === "parent" && r.person2Id === person.id,
     );
-    if (!hasParentsInMain && (person.familyGroup ?? MAIN_FAMILY) === MAIN_FAMILY) {
+    if (!hasParentsInMain) {
       return personalGroupFor(person);
     }
-    return person.familyGroup ?? MAIN_FAMILY;
+    return MAIN_FAMILY;
   };
 
   const parents = relationships
