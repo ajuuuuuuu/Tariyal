@@ -11,8 +11,6 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import { Toaster } from "@/components/ui/sonner";
-import { trackPageVisit } from "@/lib/visit-tracking";
 
 function NotFoundComponent() {
   return (
@@ -80,23 +78,24 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Lovable App" },
-      { name: "description", content: "Warm Greetings is a simple application for sending and receiving messages." },
+      { name: "description", content: "Kind Connections is a web application designed to facilitate meaningful connections between individuals." },
       { name: "author", content: "Lovable" },
       { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Warm Greetings is a simple application for sending and receiving messages." },
+      { property: "og:description", content: "Kind Connections is a web application designed to facilitate meaningful connections between individuals." },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
+      { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },
       { name: "twitter:title", content: "Lovable App" },
-      { name: "twitter:description", content: "Warm Greetings is a simple application for sending and receiving messages." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/dxFijyPm7iYQLs9bu3Zt3s0ML6o1/social-images/social-1783074407279-Gemini_Generated_Image_a9pqela9pqela9pq.webp" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/dxFijyPm7iYQLs9bu3Zt3s0ML6o1/social-images/social-1783074407279-Gemini_Generated_Image_a9pqela9pqela9pq.webp" },
+      { name: "twitter:description", content: "Kind Connections is a web application designed to facilitate meaningful connections between individuals." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/4669c787-1af2-4b92-a3ca-0540ac271fe0/id-preview-c2083c32--9578c134-bceb-4f28-ae68-30351a77ef25.lovable.app-1784280072021.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/4669c787-1af2-4b92-a3ca-0540ac271fe0/id-preview-c2083c32--9578c134-bceb-4f28-ae68-30351a77ef25.lovable.app-1784280072021.png" },
     ],
     links: [
       {
         rel: "stylesheet",
         href: appCss,
       },
+      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
   }),
   shellComponent: RootShell,
@@ -122,15 +121,10 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
-  useEffect(() => {
-    void trackPageVisit();
-  }, []);
-
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
-      <Toaster richColors position="top-right" />
     </QueryClientProvider>
   );
 }
