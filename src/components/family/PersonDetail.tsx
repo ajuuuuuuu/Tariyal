@@ -218,7 +218,7 @@ export function PersonDetail({
               {isAdmin ? "Edit" : "Request edit"}
             </Button>
           )}
-          {isAdmin && (
+          {canManage && (
             <>
               <Button size="sm" variant="secondary" onClick={() => setMode("addDesc")}>
                 Add descendant
@@ -245,20 +245,22 @@ export function PersonDetail({
               <Button size="sm" variant="secondary" onClick={() => setMode("addSister")}>
                 Add sister
               </Button>
-              <Button
-                size="sm"
-                variant="destructive"
-                onClick={() => {
-                  if (confirm(`Delete ${currentPerson.name}?`)) {
-                    run(async () => {
-                      await deletePerson(currentPerson.id);
-                      onClose();
-                    }, "Deleted");
-                  }
-                }}
-              >
-                Delete
-              </Button>
+              {isAdmin && (
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => {
+                    if (confirm(`Delete ${currentPerson.name}?`)) {
+                      run(async () => {
+                        await deletePerson(currentPerson.id);
+                        onClose();
+                      }, "Deleted");
+                    }
+                  }}
+                >
+                  Delete
+                </Button>
+              )}
             </>
           )}
         </div>
