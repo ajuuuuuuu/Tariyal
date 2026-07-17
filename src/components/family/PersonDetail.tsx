@@ -63,8 +63,12 @@ export function PersonDetail({
   const currentPerson = person;
   const isSelf = currentUserPersonId === currentPerson.id;
   const canEdit = Boolean(currentUserId) && (isAdmin || userRole === "member" || isSelf);
-  const canAddWife = isAdmin && currentPerson.gender === "male";
-  const canAddHusband = isAdmin && currentPerson.gender === "female";
+  // Members can manage (add relatives) inside a personal sub-tree (wife/daughter branches).
+  const inPersonalTree = currentPerson.familyGroup?.startsWith("personal-") ?? false;
+  const canManage = isAdmin || (userRole === "member" && inPersonalTree);
+  const canAddWife = canManage && currentPerson.gender === "male";
+  const canAddHusband = canManage && currentPerson.gender === "female";
+
 
   const personalGroupFor = (person: Person) => {
     const ownPersonalGroup = `personal-${person.id}`;
