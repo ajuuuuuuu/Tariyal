@@ -49,6 +49,7 @@ function Index() {
   const relationships = data?.relationships ?? [];
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedFromTree, setSelectedFromTree] = useState<"main" | "switch">("main");
   const [query, setQuery] = useState("");
   const [highlightId, setHighlightId] = useState<string | null>(null);
   const [treeViewPersonId, setTreeViewPersonId] = useState<string | null>(null);
