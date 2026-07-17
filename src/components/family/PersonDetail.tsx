@@ -245,22 +245,31 @@ export function PersonDetail({
               <Button size="sm" variant="secondary" onClick={() => setMode("addSister")}>
                 Add sister
               </Button>
-              {isAdmin && (
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  onClick={() => {
-                    if (confirm(`Delete ${currentPerson.name}?`)) {
-                      run(async () => {
-                        await deletePerson(currentPerson.id);
-                        onClose();
-                      }, "Deleted");
-                    }
-                  }}
-                >
-                  Delete
-                </Button>
-              )}
+              {(() => {
+                const personalRootId = currentPerson.familyGroup?.startsWith("personal-")
+                  ? currentPerson.familyGroup.slice("personal-".length)
+                  : null;
+                const isPersonalRoot = personalRootId === currentPerson.id;
+                const canDelete = isAdmin || (userRole === "member" && inPersonalTree && !isPersonalRoot);
+                if (!canDelete) return null;
+                return (
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => {
+                      if (confirm(`Delete ${currentPerson.name}?`)) {
+                        run(async () => {
+                          await deletePerson(currentPerson.id);
+                          onClose();
+                        }, "Deleted");
+                      }
+                    }}
+                  >
+                    Delete
+                  </Button>
+                );
+              })()}
+
             </>
           )}
 
