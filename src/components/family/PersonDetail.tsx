@@ -20,6 +20,7 @@ export function PersonDetail({
   persons,
   relationships,
   isAdmin,
+  canManage: canManageProp,
   currentUserPersonId = null,
   canViewBirthFamily = false,
   currentUserId = null,
@@ -34,6 +35,8 @@ export function PersonDetail({
   persons: Person[];
   relationships: Relationship[];
   isAdmin: boolean;
+  /** When true, non-admin members can add/edit nodes here (e.g. inside a personal/birth tree view). */
+  canManage?: boolean;
   currentUserPersonId?: string | null;
   canViewBirthFamily?: boolean;
   currentUserId?: string | null;
@@ -62,9 +65,10 @@ export function PersonDetail({
 
   const currentPerson = person;
   const isSelf = currentUserPersonId === currentPerson.id;
-  const canEdit = Boolean(currentUserId) && (isAdmin || userRole === "member" || isSelf);
-  const canAddWife = isAdmin && currentPerson.gender === "male";
-  const canAddHusband = isAdmin && currentPerson.gender === "female";
+  const canManage = isAdmin || Boolean(canManageProp && (userRole === "member" || userRole === "admin"));
+  const canEdit = Boolean(currentUserId) && (canManage || isSelf);
+  const canAddWife = canManage && currentPerson.gender === "male";
+  const canAddHusband = canManage && currentPerson.gender === "female";
 
   const personalGroupFor = (person: Person) => {
     const ownPersonalGroup = `personal-${person.id}`;
