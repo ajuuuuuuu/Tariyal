@@ -63,12 +63,8 @@ export function PersonDetail({
   const currentPerson = person;
   const isSelf = currentUserPersonId === currentPerson.id;
   const canEdit = Boolean(currentUserId) && (isAdmin || userRole === "member" || isSelf);
-  // Members can manage (add relatives) inside a personal sub-tree (wife/daughter branches).
-  const inPersonalTree = currentPerson.familyGroup?.startsWith("personal-") ?? false;
-  const canManage = isAdmin || (userRole === "member" && inPersonalTree);
-  const canAddWife = canManage && currentPerson.gender === "male";
-  const canAddHusband = canManage && currentPerson.gender === "female";
-
+  const canAddWife = isAdmin && currentPerson.gender === "male";
+  const canAddHusband = isAdmin && currentPerson.gender === "female";
 
   const personalGroupFor = (person: Person) => {
     const ownPersonalGroup = `personal-${person.id}`;
@@ -84,24 +80,24 @@ export function PersonDetail({
       : null;
 
   const parentSiblingGroupFor = (person: Person) => {
-    // Ancestors/siblings stay in the same sub-tree as the person we're
-    // adding them to. If the person is already in a personal-* group,
-    // inherit that group verbatim — do NOT mint a new personal group per
-    // generation (that would isolate each ancestor into their own tree
-    // and hide them from the sub-tree view).
-    if (person.familyGroup?.startsWith("personal-")) {
+    // Keep parents/siblings in the SAME family group the person already
+    // belongs to, so they show up in whatever tree the person is visible in.
+    // A married-in spouse whose familyGroup is `personal-{husbandId}` needs
+    // her parents in that same group — not a brand-new `personal-{wifeId}`
+    // group that no tree renders.
+    if (person.familyGroup && person.familyGroup !== MAIN_FAMILY) {
       return person.familyGroup;
     }
-    // If this person has no parents recorded in main tree, treat their
-    // parents/siblings as belonging to their own personal tree (e.g., a
-    // spouse who married into the main family).
+    // Person is in the main family. If they have no parents in the main tree
+    // yet (e.g., a married-in spouse still tagged MAIN_FAMILY), fall back to
+    // their own personal group so a mini birth-family tree can form.
     const hasParentsInMain = relationships.some(
       (r) => r.type === "parent" && r.person2Id === person.id,
     );
-    if (!hasParentsInMain && (person.familyGroup ?? MAIN_FAMILY) === MAIN_FAMILY) {
+    if (!hasParentsInMain) {
       return personalGroupFor(person);
     }
-    return person.familyGroup ?? MAIN_FAMILY;
+    return MAIN_FAMILY;
   };
 
   const parents = relationships
@@ -218,7 +214,7 @@ export function PersonDetail({
               {isAdmin ? "Edit" : "Request edit"}
             </Button>
           )}
-          {canManage && (
+          {isAdmin && (
             <>
               <Button size="sm" variant="secondary" onClick={() => setMode("addDesc")}>
                 Add descendant
@@ -245,34 +241,22 @@ export function PersonDetail({
               <Button size="sm" variant="secondary" onClick={() => setMode("addSister")}>
                 Add sister
               </Button>
-              {(() => {
-                const personalRootId = currentPerson.familyGroup?.startsWith("personal-")
-                  ? currentPerson.familyGroup.slice("personal-".length)
-                  : null;
-                const isPersonalRoot = personalRootId === currentPerson.id;
-                const canDelete = isAdmin || (userRole === "member" && inPersonalTree && !isPersonalRoot);
-                if (!canDelete) return null;
-                return (
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => {
-                      if (confirm(`Delete ${currentPerson.name}?`)) {
-                        run(async () => {
-                          await deletePerson(currentPerson.id);
-                          onClose();
-                        }, "Deleted");
-                      }
-                    }}
-                  >
-                    Delete
-                  </Button>
-                );
-              })()}
-
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={() => {
+                  if (confirm(`Delete ${currentPerson.name}?`)) {
+                    run(async () => {
+                      await deletePerson(currentPerson.id);
+                      onClose();
+                    }, "Deleted");
+                  }
+                }}
+              >
+                Delete
+              </Button>
             </>
           )}
-
         </div>
       )}
 

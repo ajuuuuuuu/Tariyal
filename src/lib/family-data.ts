@@ -64,18 +64,6 @@ export function getTreeSwitchContext(
     };
   }
 
-  // If this person already lives in someone else's personal sub-tree
-  // (e.g. a wife stored under `personal-<husbandId>`), show THAT sub-tree
-  // so newly added relatives (which inherit the same group) appear.
-  if (personalGroup) {
-    return {
-      mode: "self",
-      group: personalGroup,
-      title: "Personal tree",
-      description: "Showing the personal tree for this person and their spouse-related relatives.",
-    };
-  }
-
   const marriedGroup = spousePeople.find(
     (spouse) =>
       spouse.familyGroup &&
@@ -95,7 +83,6 @@ export function getTreeSwitchContext(
     };
   }
 
-
   if (birthGroup) {
     return {
       mode: "birth",
@@ -107,9 +94,8 @@ export function getTreeSwitchContext(
 
   return {
     mode: "self",
-    group: personalGroup ?? ownPersonalGroup,
+    group: ownPersonalGroup,
     title: "Personal tree",
     description: "Showing the personal tree for this person (their descendants/spouse added under them).",
   };
-
 }
