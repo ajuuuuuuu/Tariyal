@@ -75,7 +75,7 @@ export function PersonDetail({
   const currentPerson = person;
   const isSelf = currentUserPersonId === currentPerson.id;
   const canManage = isAdmin || Boolean(canManageProp && (userRole === "member" || userRole === "admin"));
-  const canEdit = isAdmin || Boolean(currentUserId && (userRole === "member" || userRole === "admin" || isSelf));
+  const canEdit = isAdmin || Boolean(currentUserId);
   const canAddWife = canManage && currentPerson.gender === "male";
   const canAddHusband = canManage && currentPerson.gender === "female";
 
