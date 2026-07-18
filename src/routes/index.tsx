@@ -374,6 +374,8 @@ function Index() {
             }}
             highlightId={highlightId}
             relatedIds={relatedIds}
+            allPersons={persons}
+            showAddedIndicator
           />
         )}
       </main>
