@@ -58,25 +58,24 @@ export const addFamilyRelative = createServerFn({ method: "POST" })
 
     const relationships = relRows ?? [];
 
+    // Member additions ALWAYS happen from within a personal/switch tree
+    // view (the UI hides these buttons in the main tree for non-admins).
+    // So every relative a member adds must land in a personal group and
+    // never in MAIN_FAMILY — otherwise the new node leaks into the main
+    // tree (bug: Kamla's mother appearing in main tree) or disappears
+    // from the personal tree that's being viewed (bug: Sushmi's brother
+    // missing after prior edits promoted her group to MAIN).
+    //
+    // If the focal person already lives in some personal group (their own
+    // or e.g. her husband's `personal-{husbandId}`), reuse that same group
+    // so the new node shows up in the exact tree the member is looking at.
+    // Otherwise, fall back to the focal person's own `personal-{id}` group.
     const personalGroupFor = (person: { id: string; family_group: string | null }) => {
-      const ownPersonalGroup = `personal-${person.id}`;
-      if (person.family_group?.startsWith("personal-") && person.family_group !== ownPersonalGroup) {
-        return ownPersonalGroup;
-      }
-      return person.family_group && person.family_group !== MAIN_FAMILY ? person.family_group : ownPersonalGroup;
+      if (person.family_group?.startsWith("personal-")) return person.family_group;
+      return `personal-${person.id}`;
     };
 
-    const parentSiblingGroupFor = (person: { id: string; family_group: string | null }) => {
-      if (person.family_group && person.family_group !== MAIN_FAMILY) {
-        return person.family_group;
-      }
-
-      const hasParentsInMain = relationships.some(
-        (relationship) => relationship.type === "parent" && relationship.person2_id === person.id,
-      );
-
-      return hasParentsInMain ? MAIN_FAMILY : personalGroupFor(person);
-    };
+    const parentSiblingGroupFor = personalGroupFor;
 
     const createPerson = async (gender: "male" | "female" | "other", familyGroup: string) => {
       const id = makeId("p");
