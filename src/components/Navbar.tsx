@@ -133,16 +133,6 @@ export function Navbar({
           <h1 className="truncate text-base font-bold text-yellow-400 pointer-events-none select-none sm:text-xl">
             {title}
           </h1>
-          <p className="truncate text-[10px] text-yellow-300/80 flex items-center gap-1 pointer-events-none select-none sm:text-xs">
-            {user ? (
-              <>
-                <span className="text-yellow-600">🛡️</span>
-                <span>{roleLabel}</span>
-              </>
-            ) : (
-              "Guest"
-            )}
-          </p>
         </div>
       </div>
 
@@ -208,20 +198,28 @@ export function Navbar({
           </button>
         )}
 
-        {user && !hasMyNode && onOpenJoin && (
-          <Button
-            size="sm"
-            disabled={pendingJoinRequest}
-            onClick={onOpenJoin}
-            className="royal-button-outlined select-none"
-          >
-            {pendingJoinRequest ? "Request pending" : "Add me"}
+        {!user ? (
+          <Button size="sm" onClick={() => navigate({ to: "/auth" })} className="royal-button-outlined select-none">
+            Login to edit/add
           </Button>
-        )}
-        {hasMyNode && onMyNode && (
-          <Button size="sm" onClick={onMyNode} className="royal-button-outlined select-none">
-            My node
-          </Button>
+        ) : (
+          <>
+            {!hasMyNode && onOpenJoin && (
+              <Button
+                size="sm"
+                disabled={pendingJoinRequest}
+                onClick={onOpenJoin}
+                className="royal-button-outlined select-none"
+              >
+                {pendingJoinRequest ? "Request pending" : "Add me"}
+              </Button>
+            )}
+            {hasMyNode && onMyNode && (
+              <Button size="sm" onClick={onMyNode} className="royal-button-outlined select-none">
+                My node
+              </Button>
+            )}
+          </>
         )}
 
         <DropdownMenu>
@@ -247,7 +245,7 @@ export function Navbar({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
             <DropdownMenuLabel className="truncate">
-              {user ? profile?.display_name ?? user.email : "Guest"}
+              {user ? profile?.display_name ?? user.email : "Login"}
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             {user ? (

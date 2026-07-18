@@ -55,6 +55,11 @@ export function FamilyTree({
       nodes.map((n) => {
         const switchContext = getTreeSwitchContext(n.data.person, persons, relationships);
         const isFemale = n.data.person.gender === "female";
+        const hasSpouseLink = relationships.some(
+          (relationship) =>
+            relationship.type === "spouse" &&
+            (relationship.person1Id === n.data.person.id || relationship.person2Id === n.data.person.id),
+        );
         const canSwitch = Boolean(onSwitchTree && switchContext && isFemale);
         const lookup = allPersons ?? persons;
         const hasAddedInPersonalTree =
@@ -70,6 +75,7 @@ export function FamilyTree({
             onToggleCollapse: toggleCollapse,
             canSwitchTree: canSwitch,
             switchTreeHighlighted: hasAddedInPersonalTree,
+            switchTreeVariant: hasSpouseLink ? "blue" : "green",
             onSwitchTree,
           },
         };

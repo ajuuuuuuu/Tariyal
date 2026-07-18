@@ -12,6 +12,7 @@ interface NodeData {
   onToggleCollapse?: (id: string) => void;
   canSwitchTree?: boolean;
   switchTreeHighlighted?: boolean;
+  switchTreeVariant?: "blue" | "green";
   onSwitchTree?: (id: string) => void;
 }
 
@@ -136,7 +137,9 @@ export function PersonNode({ data }: { data: NodeData }) {
           }}
           className={`absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full shadow-sm transition ${
             data.switchTreeHighlighted
-              ? "border border-blue-300 bg-gradient-to-br from-sky-400 to-blue-600 text-white hover:from-sky-500 hover:to-blue-700"
+              ? data.switchTreeVariant === "blue"
+                ? "border border-blue-300 bg-gradient-to-br from-sky-400 to-blue-600 text-white hover:from-sky-500 hover:to-blue-700"
+                : "border border-green-300 bg-gradient-to-br from-emerald-400 to-green-600 text-white hover:from-emerald-500 hover:to-green-700"
               : "border bg-card text-muted-foreground hover:bg-accent hover:text-foreground"
           }`}
           aria-label={`Switch tree for ${p.name}`}
