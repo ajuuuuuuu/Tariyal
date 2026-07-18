@@ -133,7 +133,7 @@ export function PersonNode({ data }: { data: NodeData }) {
             e.stopPropagation();
             data.onSwitchTree?.(p.id);
           }}
-          className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full border bg-card text-muted-foreground shadow-sm transition hover:bg-accent hover:text-foreground"
+          className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full border border-blue-300 bg-gradient-to-br from-sky-400 to-blue-600 text-white shadow-sm transition hover:from-sky-500 hover:to-blue-700"
           aria-label={`Switch tree for ${p.name}`}
           title="Switch tree"
         >
