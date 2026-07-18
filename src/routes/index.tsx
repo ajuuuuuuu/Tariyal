@@ -171,115 +171,25 @@ function Index() {
   );
   const treeViewPersons = useMemo(() => {
     if (!treeViewPerson) return [];
-    const groupMembers = treeViewContext?.group
-      ? persons.filter((person) => (person.familyGroup ?? MAIN_FAMILY) === treeViewContext.group)
-      : [];
+    if (!treeViewContext?.group) return [treeViewPerson];
 
-    let extra: typeof persons = [];
     const focalGroup = treeViewPerson.familyGroup ?? MAIN_FAMILY;
     const ownPersonalGroup = `personal-${treeViewPerson.id}`;
-    const viewingMarriedTree = treeViewContext?.mode === "married";
+    const viewingMarriedTree = treeViewContext.mode === "married";
     const focalIsInGroup =
       !viewingMarriedTree &&
-      (treeViewContext?.group === focalGroup || treeViewContext?.group === ownPersonalGroup);
+      (treeViewContext.group === focalGroup || treeViewContext.group === ownPersonalGroup);
 
-    if (
-      treeViewContext?.mode === "self" &&
-      treeViewContext.group?.startsWith("personal-") &&
-      focalIsInGroup &&
-      treeViewContext.group !== ownPersonalGroup
-    ) {
-      // Focal person's own birth tree (e.g. wife viewing her birth family).
-      // Include parents, grandparents, siblings, siblings' children, and
-      // nieces/nephews. Do NOT include spouse or descendants — those belong
-      // to the married-into tree, not the birth tree.
-      const personById = new Map(persons.map((p) => [p.id, p]));
-      const ids = new Set<string>();
-      const parentIds = relationships
-        .filter((r) => r.type === "parent" && r.person2Id === treeViewPerson.id)
-        .map((r) => r.person1Id);
-
-      parentIds.forEach((id) => ids.add(id));
-
-      const grandParentIds = new Set<string>();
-      parentIds.forEach((parentId) => {
-        relationships
-          .filter((r) => r.type === "parent" && r.person2Id === parentId)
-          .forEach((r) => {
-            ids.add(r.person1Id);
-            grandParentIds.add(r.person1Id);
-          });
-      });
-
-      const siblingIds = new Set<string>();
-      parentIds.forEach((parentId) => {
-        relationships
-          .filter((r) => r.type === "parent" && r.person1Id === parentId)
-          .forEach((r) => {
-            if (r.person2Id !== treeViewPerson.id) {
-              siblingIds.add(r.person2Id);
-              ids.add(r.person2Id);
-            }
-          });
-      });
-
-      grandParentIds.forEach((grandParentId) => {
-        relationships
-          .filter((r) => r.type === "parent" && r.person1Id === grandParentId)
-          .forEach((r) => {
-            if (!parentIds.includes(r.person2Id) && r.person2Id !== treeViewPerson.id) {
-              ids.add(r.person2Id);
-            }
-          });
-      });
-
-      siblingIds.forEach((siblingId) => {
-        relationships
-          .filter((r) => r.type === "parent" && r.person1Id === siblingId)
-          .forEach((r) => ids.add(r.person2Id));
-      });
-
-      extra = Array.from(ids)
-        .map((id) => personById.get(id))
-        .filter((p): p is (typeof persons)[number] => Boolean(p));
-    }
-
-    const combined = Array.from(
-      new Map([treeViewPerson, ...groupMembers, ...extra].map((person) => [person.id, person])).values(),
+    // Personal/switch tree = every person that lives in the target family
+    // group (+ the focal person). This mirrors main-tree behavior: whatever
+    // node is added to this group renders here, with the same hierarchical
+    // layout, edges, and interactions.
+    const groupMembers = persons.filter(
+      (person) => (person.familyGroup ?? MAIN_FAMILY) === treeViewContext.group,
     );
-
-    if (focalIsInGroup && treeViewContext?.mode === "self") {
-      // Wife's birth tree must not show her husband or her children even when
-      // those people share the same personal group in older data.
-      const spouseIds = new Set<string>();
-      relationships
-        .filter(
-          (relationship) =>
-            relationship.type === "spouse" &&
-            (relationship.person1Id === treeViewPerson.id || relationship.person2Id === treeViewPerson.id),
-        )
-        .forEach((relationship) =>
-          spouseIds.add(relationship.person1Id === treeViewPerson.id ? relationship.person2Id : relationship.person1Id),
-        );
-
-      const descendantIds = new Set<string>();
-      const queue = [treeViewPerson.id];
-      while (queue.length > 0) {
-        const parentId = queue.shift()!;
-        relationships
-          .filter((relationship) => relationship.type === "parent" && relationship.person1Id === parentId)
-          .forEach((relationship) => {
-            if (!descendantIds.has(relationship.person2Id)) {
-              descendantIds.add(relationship.person2Id);
-              queue.push(relationship.person2Id);
-            }
-          });
-      }
-
-      return combined.filter(
-        (person) => person.id === treeViewPerson.id || (!spouseIds.has(person.id) && !descendantIds.has(person.id)),
-      );
-    }
+    const combined = Array.from(
+      new Map([treeViewPerson, ...groupMembers].map((person) => [person.id, person])).values(),
+    );
 
     if (!focalIsInGroup) {
       // Viewing someone else's tree (e.g. daughter viewing husband's birth
@@ -296,7 +206,6 @@ function Index() {
           .forEach((r) => {
             if (r.person2Id !== treeViewPerson.id) {
               birthExclude.add(r.person2Id);
-              // sibling's children
               relationships
                 .filter((rr) => rr.type === "parent" && rr.person1Id === r.person2Id)
                 .forEach((rr) => birthExclude.add(rr.person2Id));
@@ -307,7 +216,6 @@ function Index() {
     }
 
     return combined;
-
   }, [persons, treeViewContext, treeViewPerson, relationships]);
   const treeViewIds = useMemo(() => new Set(treeViewPersons.map((person) => person.id)), [treeViewPersons]);
   const treeViewRelationships = useMemo(
@@ -442,6 +350,8 @@ function Index() {
                   setSelectedId(null);
                 }}
                 highlightId={treeViewPerson.id}
+                allPersons={persons}
+                showAddedIndicator
               />
             )}
           </div>
