@@ -177,7 +177,9 @@ function Index() {
 
     let extra: typeof persons = [];
     const focalGroup = treeViewPerson.familyGroup ?? MAIN_FAMILY;
-    const focalIsInGroup = treeViewContext?.group === focalGroup;
+    const ownPersonalGroup = `personal-${treeViewPerson.id}`;
+    const focalIsInGroup =
+      treeViewContext?.group === focalGroup || treeViewContext?.group === ownPersonalGroup;
 
     if (
       treeViewContext?.mode === "self" &&
