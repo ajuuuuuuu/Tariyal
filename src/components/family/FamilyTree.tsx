@@ -50,6 +50,12 @@ export function FamilyTree({
     () =>
       nodes.map((n) => {
         const switchContext = getTreeSwitchContext(n.data.person, persons, relationships);
+        const isFemale = n.data.person.gender === "female";
+        const canSwitch = Boolean(onSwitchTree && switchContext && isFemale);
+        const hasAddedInPersonalTree =
+          canSwitch && switchContext?.group
+            ? persons.some((p) => p.id !== n.data.person.id && p.familyGroup === switchContext.group)
+            : false;
         const base: Node = {
           ...n,
           data: {
@@ -57,7 +63,8 @@ export function FamilyTree({
             hasChildren: hasChildrenOf.has(n.id),
             collapsed: collapsed.has(n.id),
             onToggleCollapse: toggleCollapse,
-            canSwitchTree: Boolean(onSwitchTree && switchContext && n.data.person.gender === "female"),
+            canSwitchTree: canSwitch,
+            switchTreeHighlighted: hasAddedInPersonalTree,
             onSwitchTree,
           },
         };
