@@ -21,6 +21,8 @@ export function FamilyTree({
   onSwitchTree,
   highlightId,
   relatedIds,
+  allPersons,
+  showAddedIndicator = false,
 }: {
   persons: Person[];
   relationships: Relationship[];
@@ -29,6 +31,8 @@ export function FamilyTree({
   onSwitchTree?: (id: string) => void;
   highlightId?: string | null;
   relatedIds?: Set<string>;
+  allPersons?: Person[];
+  showAddedIndicator?: boolean;
 }) {
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
 
@@ -52,9 +56,10 @@ export function FamilyTree({
         const switchContext = getTreeSwitchContext(n.data.person, persons, relationships);
         const isFemale = n.data.person.gender === "female";
         const canSwitch = Boolean(onSwitchTree && switchContext && isFemale);
+        const lookup = allPersons ?? persons;
         const hasAddedInPersonalTree =
-          canSwitch && switchContext?.group
-            ? persons.some((p) => p.id !== n.data.person.id && p.familyGroup === switchContext.group)
+          showAddedIndicator && canSwitch && switchContext?.group
+            ? lookup.some((p) => p.id !== n.data.person.id && p.familyGroup === switchContext.group)
             : false;
         const base: Node = {
           ...n,
@@ -82,7 +87,7 @@ export function FamilyTree({
         }
         return base;
       }),
-    [nodes, persons, relationships, hasChildrenOf, collapsed, toggleCollapse, onSwitchTree, highlightId, relatedIds],
+    [nodes, persons, relationships, hasChildrenOf, collapsed, toggleCollapse, onSwitchTree, highlightId, relatedIds, allPersons, showAddedIndicator],
   );
 
   const rfKey = useMemo(
