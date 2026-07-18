@@ -56,9 +56,10 @@ export function FamilyTree({
         const switchContext = getTreeSwitchContext(n.data.person, persons, relationships);
         const isFemale = n.data.person.gender === "female";
         const canSwitch = Boolean(onSwitchTree && switchContext && isFemale);
+        const lookup = allPersons ?? persons;
         const hasAddedInPersonalTree =
-          canSwitch && switchContext?.group
-            ? persons.some((p) => p.id !== n.data.person.id && p.familyGroup === switchContext.group)
+          showAddedIndicator && canSwitch && switchContext?.group
+            ? lookup.some((p) => p.id !== n.data.person.id && p.familyGroup === switchContext.group)
             : false;
         const base: Node = {
           ...n,
