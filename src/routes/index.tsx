@@ -350,6 +350,8 @@ function Index() {
                   setSelectedId(null);
                 }}
                 highlightId={treeViewPerson.id}
+                allPersons={persons}
+                showAddedIndicator
               />
             )}
           </div>
