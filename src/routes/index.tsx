@@ -186,7 +186,8 @@ function Index() {
     if (
       treeViewContext?.mode === "self" &&
       treeViewContext.group?.startsWith("personal-") &&
-      focalIsInGroup
+      focalIsInGroup &&
+      treeViewContext.group !== ownPersonalGroup
     ) {
       // Focal person's own birth tree (e.g. wife viewing her birth family).
       // Include parents, grandparents, siblings, siblings' children, and
