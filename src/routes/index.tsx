@@ -178,8 +178,10 @@ function Index() {
     let extra: typeof persons = [];
     const focalGroup = treeViewPerson.familyGroup ?? MAIN_FAMILY;
     const ownPersonalGroup = `personal-${treeViewPerson.id}`;
+    const viewingMarriedTree = treeViewContext?.mode === "married";
     const focalIsInGroup =
-      treeViewContext?.group === focalGroup || treeViewContext?.group === ownPersonalGroup;
+      !viewingMarriedTree &&
+      (treeViewContext?.group === focalGroup || treeViewContext?.group === ownPersonalGroup);
 
     if (
       treeViewContext?.mode === "self" &&
@@ -244,6 +246,39 @@ function Index() {
     const combined = Array.from(
       new Map([treeViewPerson, ...groupMembers, ...extra].map((person) => [person.id, person])).values(),
     );
+
+    if (focalIsInGroup && treeViewContext?.mode === "self") {
+      // Wife's birth tree must not show her husband or her children even when
+      // those people share the same personal group in older data.
+      const spouseIds = new Set<string>();
+      relationships
+        .filter(
+          (relationship) =>
+            relationship.type === "spouse" &&
+            (relationship.person1Id === treeViewPerson.id || relationship.person2Id === treeViewPerson.id),
+        )
+        .forEach((relationship) =>
+          spouseIds.add(relationship.person1Id === treeViewPerson.id ? relationship.person2Id : relationship.person1Id),
+        );
+
+      const descendantIds = new Set<string>();
+      const queue = [treeViewPerson.id];
+      while (queue.length > 0) {
+        const parentId = queue.shift()!;
+        relationships
+          .filter((relationship) => relationship.type === "parent" && relationship.person1Id === parentId)
+          .forEach((relationship) => {
+            if (!descendantIds.has(relationship.person2Id)) {
+              descendantIds.add(relationship.person2Id);
+              queue.push(relationship.person2Id);
+            }
+          });
+      }
+
+      return combined.filter(
+        (person) => person.id === treeViewPerson.id || (!spouseIds.has(person.id) && !descendantIds.has(person.id)),
+      );
+    }
 
     if (!focalIsInGroup) {
       // Viewing someone else's tree (e.g. daughter viewing husband's birth
