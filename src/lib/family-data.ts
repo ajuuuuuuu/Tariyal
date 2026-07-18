@@ -103,9 +103,8 @@ export function getTreeSwitchContext(
   )?.familyGroup ?? null;
 
   if (marriedGroup) {
-    const isPersonal = marriedGroup.startsWith("personal-");
     return {
-      mode: isPersonal ? "self" : "married",
+      mode: "married",
       group: marriedGroup,
       title: isFemale ? "Husband birth tree" : "Married family tree",
       description: isFemale
