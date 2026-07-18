@@ -11,6 +11,7 @@ interface NodeData {
   collapsed?: boolean;
   onToggleCollapse?: (id: string) => void;
   canSwitchTree?: boolean;
+  switchTreeHighlighted?: boolean;
   onSwitchTree?: (id: string) => void;
 }
 
