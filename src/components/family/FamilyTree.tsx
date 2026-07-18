@@ -21,6 +21,8 @@ export function FamilyTree({
   onSwitchTree,
   highlightId,
   relatedIds,
+  allPersons,
+  showAddedIndicator = false,
 }: {
   persons: Person[];
   relationships: Relationship[];
@@ -29,6 +31,8 @@ export function FamilyTree({
   onSwitchTree?: (id: string) => void;
   highlightId?: string | null;
   relatedIds?: Set<string>;
+  allPersons?: Person[];
+  showAddedIndicator?: boolean;
 }) {
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
 
