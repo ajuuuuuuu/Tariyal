@@ -87,7 +87,7 @@ export function FamilyTree({
         }
         return base;
       }),
-    [nodes, persons, relationships, hasChildrenOf, collapsed, toggleCollapse, onSwitchTree, highlightId, relatedIds],
+    [nodes, persons, relationships, hasChildrenOf, collapsed, toggleCollapse, onSwitchTree, highlightId, relatedIds, allPersons, showAddedIndicator],
   );
 
   const rfKey = useMemo(
