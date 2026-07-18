@@ -176,7 +176,18 @@ function Index() {
       : [];
 
     let extra: typeof persons = [];
-    if (treeViewContext?.mode === "self" && treeViewContext.group?.startsWith("personal-")) {
+    const focalGroup = treeViewPerson.familyGroup ?? MAIN_FAMILY;
+    const focalIsInGroup = treeViewContext?.group === focalGroup;
+
+    if (
+      treeViewContext?.mode === "self" &&
+      treeViewContext.group?.startsWith("personal-") &&
+      focalIsInGroup
+    ) {
+      // Focal person's own birth tree (e.g. wife viewing her birth family).
+      // Include parents, grandparents, siblings, siblings' children, and
+      // nieces/nephews. Do NOT include spouse or descendants — those belong
+      // to the married-into tree, not the birth tree.
       const personById = new Map(persons.map((p) => [p.id, p]));
       const ids = new Set<string>();
       const parentIds = relationships
@@ -222,28 +233,43 @@ function Index() {
           .filter((r) => r.type === "parent" && r.person1Id === siblingId)
           .forEach((r) => ids.add(r.person2Id));
       });
-      // Add spouses of the focal person
-      relationships
-        .filter((r) => r.type === "spouse" && (r.person1Id === treeViewPerson.id || r.person2Id === treeViewPerson.id))
-        .forEach((r) => ids.add(r.person1Id === treeViewPerson.id ? r.person2Id : r.person1Id));
-
-      // Add children of the focal person
-      relationships
-        .filter((r) => r.type === "parent" && r.person1Id === treeViewPerson.id)
-        .forEach((r) => ids.add(r.person2Id));
-
-      const canShowMainFamilyBirthRelatives = treeViewContext?.title === "Birth tree";
 
       extra = Array.from(ids)
         .map((id) => personById.get(id))
-        .filter((p): p is (typeof persons)[number] =>
-          Boolean(p),
-        );
+        .filter((p): p is (typeof persons)[number] => Boolean(p));
     }
 
-    return Array.from(
+    const combined = Array.from(
       new Map([treeViewPerson, ...groupMembers, ...extra].map((person) => [person.id, person])).values(),
     );
+
+    if (!focalIsInGroup) {
+      // Viewing someone else's tree (e.g. daughter viewing husband's birth
+      // tree). Exclude the focal person's own birth-side relatives so only
+      // the target group's members appear alongside her.
+      const birthExclude = new Set<string>();
+      const focalParents = relationships
+        .filter((r) => r.type === "parent" && r.person2Id === treeViewPerson.id)
+        .map((r) => r.person1Id);
+      focalParents.forEach((pid) => {
+        birthExclude.add(pid);
+        relationships
+          .filter((r) => r.type === "parent" && r.person1Id === pid)
+          .forEach((r) => {
+            if (r.person2Id !== treeViewPerson.id) {
+              birthExclude.add(r.person2Id);
+              // sibling's children
+              relationships
+                .filter((rr) => rr.type === "parent" && rr.person1Id === r.person2Id)
+                .forEach((rr) => birthExclude.add(rr.person2Id));
+            }
+          });
+      });
+      return combined.filter((p) => !birthExclude.has(p.id));
+    }
+
+    return combined;
+
   }, [persons, treeViewContext, treeViewPerson, relationships]);
   const treeViewIds = useMemo(() => new Set(treeViewPersons.map((person) => person.id)), [treeViewPersons]);
   const treeViewRelationships = useMemo(
