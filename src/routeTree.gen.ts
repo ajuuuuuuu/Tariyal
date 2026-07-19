@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ApiPublicRepairPersonalGroupsRouteImport } from './routes/api/public/repair-personal-groups'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -29,50 +28,35 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicRepairPersonalGroupsRoute =
-  ApiPublicRepairPersonalGroupsRouteImport.update({
-    id: '/api/public/repair-personal-groups',
-    path: '/api/public/repair-personal-groups',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
-  '/api/public/repair-personal-groups': typeof ApiPublicRepairPersonalGroupsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
-  '/api/public/repair-personal-groups': typeof ApiPublicRepairPersonalGroupsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
-  '/api/public/repair-personal-groups': typeof ApiPublicRepairPersonalGroupsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/admin' | '/auth' | '/api/public/repair-personal-groups'
+  fullPaths: '/' | '/admin' | '/auth'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin' | '/auth' | '/api/public/repair-personal-groups'
-  id:
-    | '__root__'
-    | '/'
-    | '/admin'
-    | '/auth'
-    | '/api/public/repair-personal-groups'
+  to: '/' | '/admin' | '/auth'
+  id: '__root__' | '/' | '/admin' | '/auth'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
   AuthRoute: typeof AuthRoute
-  ApiPublicRepairPersonalGroupsRoute: typeof ApiPublicRepairPersonalGroupsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -98,13 +82,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/repair-personal-groups': {
-      id: '/api/public/repair-personal-groups'
-      path: '/api/public/repair-personal-groups'
-      fullPath: '/api/public/repair-personal-groups'
-      preLoaderRoute: typeof ApiPublicRepairPersonalGroupsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -112,8 +89,17 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
-  ApiPublicRepairPersonalGroupsRoute: ApiPublicRepairPersonalGroupsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
