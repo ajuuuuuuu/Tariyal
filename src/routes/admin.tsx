@@ -507,6 +507,10 @@ function AdminPage() {
           </div>
         </section>
 
+        <RolePermissionsSection />
+
+
+
         <section>
           <h2 className="mb-3 text-lg font-semibold">
             Suggestions <span className="text-sm font-normal text-muted-foreground">({suggestions.filter(s => s.status === "pending").length} pending)</span>
