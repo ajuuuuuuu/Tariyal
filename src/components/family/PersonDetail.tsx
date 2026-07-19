@@ -20,7 +20,9 @@ import {
   forgetMemberCreatedPerson,
   isMemberCreatedPerson,
 } from "@/lib/member-created-persons";
+import { useRolePermissions } from "@/hooks/use-role-permissions";
 import { toast } from "sonner";
+
 
 export function PersonDetail({
   personId,
@@ -57,6 +59,7 @@ export function PersonDetail({
   const person = persons.find((p) => p.id === personId);
   const addFamilyRelativeFn = useServerFn(addFamilyRelative);
   const deleteMemberAddedPersonFn = useServerFn(deleteMemberAddedPerson);
+  const { getForRole } = useRolePermissions();
   const [mode, setMode] = useState<
     | "view"
     | "suggest"
@@ -74,10 +77,14 @@ export function PersonDetail({
 
   const currentPerson = person;
   const isSelf = currentUserPersonId === currentPerson.id;
-  const canManage = isAdmin || Boolean(canManageProp && (userRole === "member" || userRole === "admin"));
-  const canEdit = isAdmin || Boolean(currentUserId);
-  const canAddWife = canManage && currentPerson.gender === "male";
-  const canAddHusband = canManage && currentPerson.gender === "female";
+  const rolePerms = getForRole(userRole); // null when admin (no restrictions)
+  const allow = (key: keyof NonNullable<typeof rolePerms>) => (isAdmin ? true : !!rolePerms?.[key]);
+  const canManage = isAdmin || Boolean(canManageProp && (userRole === "member" || userRole === "visitor"));
+  const canEdit = isAdmin || (Boolean(currentUserId) && allow("can_edit"));
+  const canAddWife = canManage && currentPerson.gender === "male" && allow("add_wife");
+  const canAddHusband = canManage && currentPerson.gender === "female" && allow("add_husband");
+
+
 
   const personalGroupFor = (person: Person) => {
     const ownPersonalGroup = `personal-${person.id}`;
@@ -251,9 +258,11 @@ export function PersonDetail({
           )}
           {canManage && (
             <>
-              <Button size="sm" variant="secondary" onClick={() => setMode("addDesc")}>
-                Add descendant
-              </Button>
+              {allow("add_descendant") && (
+                <Button size="sm" variant="secondary" onClick={() => setMode("addDesc")}>
+                  Add descendant
+                </Button>
+              )}
               {canAddWife && (
                 <Button size="sm" variant="secondary" onClick={() => setMode("addWife")}>
                   Add wife
@@ -264,18 +273,26 @@ export function PersonDetail({
                   Add husband
                 </Button>
               )}
-              <Button size="sm" variant="secondary" onClick={() => setMode("addFather")}>
-                Add father
-              </Button>
-              <Button size="sm" variant="secondary" onClick={() => setMode("addMother")}>
-                Add mother
-              </Button>
-              <Button size="sm" variant="secondary" onClick={() => setMode("addBrother")}>
-                Add brother
-              </Button>
-              <Button size="sm" variant="secondary" onClick={() => setMode("addSister")}>
-                Add sister
-              </Button>
+              {allow("add_father") && (
+                <Button size="sm" variant="secondary" onClick={() => setMode("addFather")}>
+                  Add father
+                </Button>
+              )}
+              {allow("add_mother") && (
+                <Button size="sm" variant="secondary" onClick={() => setMode("addMother")}>
+                  Add mother
+                </Button>
+              )}
+              {allow("add_brother") && (
+                <Button size="sm" variant="secondary" onClick={() => setMode("addBrother")}>
+                  Add brother
+                </Button>
+              )}
+              {allow("add_sister") && (
+                <Button size="sm" variant="secondary" onClick={() => setMode("addSister")}>
+                  Add sister
+                </Button>
+              )}
               {isAdmin ? (
                 <Button
                   size="sm"
@@ -294,11 +311,15 @@ export function PersonDetail({
                 </Button>
               ) : (
                 (() => {
+                  const scope = rolePerms?.delete_scope ?? "none";
+                  if (scope === "none") return null;
                   const group = currentPerson.familyGroup ?? "";
                   const isPersonalGroup = group.startsWith("personal-");
                   const isGroupRoot = group === `personal-${currentPerson.id}`;
-                  const canMemberDelete = isPersonalGroup && !isGroupRoot;
-                  if (!canMemberDelete) return null;
+                  if (!isPersonalGroup || isGroupRoot) return null;
+                  if (scope === "own" && !isMemberCreatedPerson(currentUserId, currentPerson.id)) {
+                    return null;
+                  }
                   return (
                     <Button
                       size="sm"
@@ -321,6 +342,7 @@ export function PersonDetail({
 
             </>
           )}
+
         </div>
       )}
 
