@@ -239,10 +239,10 @@ function AdminPage() {
     rolesQ.refetch();
   }
 
-  async function updateSuggestion(id: string, status: string) {
-    const { error } = await supabase.from("suggestions").update({ status }).eq("id", id);
+  async function deleteSuggestion(id: string) {
+    const { error } = await supabase.from("suggestions").delete().eq("id", id);
     if (error) toast.error(error.message);
-    else { toast.success("Updated"); suggestionsQ.refetch(); }
+    else { toast.success("Removed"); suggestionsQ.refetch(); }
   }
 
   async function applyEditSuggestion(s: SuggestionRow) {
@@ -278,11 +278,11 @@ function AdminPage() {
         .eq("id", parsed.person_id);
       if (error) throw error;
 
-      const { error: updateErr } = await supabase
+      const { error: delErr } = await supabase
         .from("suggestions")
-        .update({ status: "approved" })
+        .delete()
         .eq("id", s.id);
-      if (updateErr) throw updateErr;
+      if (delErr) throw delErr;
 
       toast.success("Edit approved and applied");
       suggestionsQ.refetch();
@@ -291,6 +291,7 @@ function AdminPage() {
       toast.error(err instanceof Error ? err.message : "Failed to apply edit request");
     }
   }
+
 
   async function approve(r: JoinRequest) {
     try {
