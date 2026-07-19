@@ -52,9 +52,12 @@ export async function fetchFamily(): Promise<{
   if (pErr) throw pErr;
   if (rErr) throw rErr;
   return {
-    persons: (pData ?? []).map(rowToPerson),
+    persons: (pData ?? [])
+      .filter((r) => r.family_group !== "__meta__" && r.id !== "__permissions__")
+      .map(rowToPerson),
     relationships: (rData ?? []).map(rowToRel),
   };
+
 }
 
 function makeId(prefix: string) {
