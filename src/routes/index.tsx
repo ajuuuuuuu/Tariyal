@@ -280,13 +280,51 @@ function Index() {
     return combined;
   }, [persons, treeViewContext, treeViewPerson, relationships, mainPersonIds]);
   const treeViewIds = useMemo(() => new Set(treeViewPersons.map((person) => person.id)), [treeViewPersons]);
-  const treeViewRelationships = useMemo(
-    () =>
-      relationships.filter(
-        (relationship) => treeViewIds.has(relationship.person1Id) && treeViewIds.has(relationship.person2Id),
-      ),
-    [relationships, treeViewIds],
-  );
+  const treeViewRelationships = useMemo(() => {
+    const scoped = relationships.filter(
+      (relationship) => treeViewIds.has(relationship.person1Id) && treeViewIds.has(relationship.person2Id),
+    );
+
+    // Synthesize spouse edges between opposite-sex parents that share a
+    // child inside this personal tree, when no spouse relationship was
+    // recorded (legacy data added before parents were auto-linked).
+    const existingSpousePairs = new Set(
+      scoped
+        .filter((r) => r.type === "spouse")
+        .map((r) => [r.person1Id, r.person2Id].sort().join("|")),
+    );
+    const parentsByChild = new Map<string, string[]>();
+    scoped
+      .filter((r) => r.type === "parent")
+      .forEach((r) => {
+        const arr = parentsByChild.get(r.person2Id) ?? [];
+        arr.push(r.person1Id);
+        parentsByChild.set(r.person2Id, arr);
+      });
+    const personById = new Map(treeViewPersons.map((p) => [p.id, p]));
+    const derived: typeof scoped = [];
+    parentsByChild.forEach((parentIds) => {
+      const males = parentIds.filter((id) => personById.get(id)?.gender === "male");
+      const females = parentIds.filter((id) => personById.get(id)?.gender === "female");
+      males.forEach((m) => {
+        females.forEach((f) => {
+          const key = [m, f].sort().join("|");
+          if (existingSpousePairs.has(key)) return;
+          existingSpousePairs.add(key);
+          derived.push({
+            id: `derived-spouse-${key}`,
+            person1Id: m,
+            person2Id: f,
+            type: "spouse",
+            sortOrder: 0,
+          });
+        });
+      });
+    });
+
+    return [...scoped, ...derived];
+  }, [relationships, treeViewIds, treeViewPersons]);
+
 
   const matches = useMemo(() => {
     const q = query.trim().toLowerCase();
