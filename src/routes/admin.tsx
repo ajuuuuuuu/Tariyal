@@ -777,13 +777,14 @@ function RolePermissionsSection() {
       <p className="mb-3 text-sm text-muted-foreground">
         Control what members and visitors can do inside personal/birth family trees.
       </p>
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="space-y-2">
         {roles.map((role) => (
-          <div key={role} className="rounded-md border bg-card p-4">
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="font-semibold capitalize">{role}</h3>
-            </div>
-            <div className="space-y-2">
+          <details key={role} className="group rounded-md border bg-card">
+            <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-2.5 text-sm font-semibold capitalize hover:bg-muted/40">
+              <span>{role}</span>
+              <span className="text-xs text-muted-foreground transition-transform group-open:rotate-180">▾</span>
+            </summary>
+            <div className="space-y-2 border-t px-4 py-3">
               {addKeys.map(({ key, label }) => (
                 <label key={key} className="flex items-center justify-between text-sm">
                   <span>{label}</span>
@@ -807,7 +808,7 @@ function RolePermissionsSection() {
                 </select>
               </div>
             </div>
-          </div>
+          </details>
         ))}
       </div>
       <div className="mt-3">
@@ -818,6 +819,7 @@ function RolePermissionsSection() {
     </section>
   );
 }
+
 
 
 // silence unused
