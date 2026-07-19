@@ -206,8 +206,9 @@ function FamilySignIn({ onDone }: { onDone: () => void }) {
           <Input id="fp" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} className="mt-1" />
         </div>
         <Button type="submit" className="w-full" disabled={loading}>
-          {mode === "signin" ? "Sign in" : "Create account"}
+          {loading ? (mode === "signin" ? "Signing in…" : "Creating account…") : mode === "signin" ? "Sign in" : "Create account"}
         </Button>
+
       </form>
       <p className="text-center text-sm text-muted-foreground">
         {mode === "signin" ? "New here?" : "Already have an account?"}{" "}
