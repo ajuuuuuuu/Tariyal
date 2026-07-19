@@ -293,24 +293,32 @@ export function PersonDetail({
                   Delete
                 </Button>
               ) : (
-                isMemberCreatedPerson(currentUserId, currentPerson.id) && (
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => {
-                      if (confirm(`Delete ${currentPerson.name}?`)) {
-                        run(async () => {
-                          await deleteMemberAddedPersonFn({ data: { personId: currentPerson.id } });
-                          forgetMemberCreatedPerson(currentUserId, currentPerson.id);
-                          onClose();
-                        }, "Deleted");
-                      }
-                    }}
-                  >
-                    Delete
-                  </Button>
-                )
+                (() => {
+                  const group = currentPerson.familyGroup ?? "";
+                  const isPersonalGroup = group.startsWith("personal-");
+                  const isGroupRoot = group === `personal-${currentPerson.id}`;
+                  const canMemberDelete = isPersonalGroup && !isGroupRoot;
+                  if (!canMemberDelete) return null;
+                  return (
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => {
+                        if (confirm(`Delete ${currentPerson.name}?`)) {
+                          run(async () => {
+                            await deleteMemberAddedPersonFn({ data: { personId: currentPerson.id } });
+                            forgetMemberCreatedPerson(currentUserId, currentPerson.id);
+                            onClose();
+                          }, "Deleted");
+                        }
+                      }}
+                    >
+                      Delete
+                    </Button>
+                  );
+                })()
               )}
+
             </>
           )}
         </div>
