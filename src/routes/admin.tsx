@@ -455,9 +455,9 @@ function AdminPage() {
           <h2 className="mb-3 text-lg font-semibold">
             Users <span className="text-sm font-normal text-muted-foreground">({profiles.length})</span>
           </h2>
-          <div className="overflow-hidden rounded-md border bg-card">
+          <div className="max-h-72 overflow-y-auto rounded-md border bg-card">
             <table className="w-full text-sm">
-              <thead className="bg-muted/50 text-left text-xs uppercase text-muted-foreground">
+              <thead className="sticky top-0 z-10 bg-muted/80 text-left text-xs uppercase text-muted-foreground backdrop-blur">
                 <tr>
                   <th className="px-3 py-2">User</th>
                   <th className="px-3 py-2">Status</th>
@@ -506,6 +506,7 @@ function AdminPage() {
             </table>
           </div>
         </section>
+
 
         <RolePermissionsSection />
 
