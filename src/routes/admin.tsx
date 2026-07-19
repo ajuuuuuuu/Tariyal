@@ -239,10 +239,10 @@ function AdminPage() {
     rolesQ.refetch();
   }
 
-  async function updateSuggestion(id: string, status: string) {
-    const { error } = await supabase.from("suggestions").update({ status }).eq("id", id);
+  async function deleteSuggestion(id: string) {
+    const { error } = await supabase.from("suggestions").delete().eq("id", id);
     if (error) toast.error(error.message);
-    else { toast.success("Updated"); suggestionsQ.refetch(); }
+    else { toast.success("Removed"); suggestionsQ.refetch(); }
   }
 
   async function applyEditSuggestion(s: SuggestionRow) {
@@ -278,11 +278,11 @@ function AdminPage() {
         .eq("id", parsed.person_id);
       if (error) throw error;
 
-      const { error: updateErr } = await supabase
+      const { error: delErr } = await supabase
         .from("suggestions")
-        .update({ status: "approved" })
+        .delete()
         .eq("id", s.id);
-      if (updateErr) throw updateErr;
+      if (delErr) throw delErr;
 
       toast.success("Edit approved and applied");
       suggestionsQ.refetch();
@@ -291,6 +291,7 @@ function AdminPage() {
       toast.error(err instanceof Error ? err.message : "Failed to apply edit request");
     }
   }
+
 
   async function approve(r: JoinRequest) {
     try {
@@ -455,9 +456,9 @@ function AdminPage() {
           <h2 className="mb-3 text-lg font-semibold">
             Users <span className="text-sm font-normal text-muted-foreground">({profiles.length})</span>
           </h2>
-          <div className="overflow-hidden rounded-md border bg-card">
+          <div className="max-h-72 overflow-y-auto rounded-md border bg-card">
             <table className="w-full text-sm">
-              <thead className="bg-muted/50 text-left text-xs uppercase text-muted-foreground">
+              <thead className="sticky top-0 z-10 bg-muted/80 text-left text-xs uppercase text-muted-foreground backdrop-blur">
                 <tr>
                   <th className="px-3 py-2">User</th>
                   <th className="px-3 py-2">Status</th>
@@ -507,6 +508,7 @@ function AdminPage() {
           </div>
         </section>
 
+
         <RolePermissionsSection />
 
 
@@ -515,45 +517,42 @@ function AdminPage() {
           <h2 className="mb-3 text-lg font-semibold">
             Suggestions <span className="text-sm font-normal text-muted-foreground">({suggestions.filter(s => s.status === "pending").length} pending)</span>
           </h2>
-          {suggestions.length === 0 ? (
+          {suggestions.filter((s) => s.status === "pending").length === 0 ? (
             <p className="rounded-md border bg-card p-4 text-sm text-muted-foreground">No suggestions yet.</p>
           ) : (
             <ul className="space-y-2">
-              {suggestions.map((s) => {
+              {suggestions.filter((s) => s.status === "pending").map((s) => {
                 const person = persons.find((p) => p.id === s.person_id);
                 return (
                   <li key={s.id} className="rounded-md border bg-card p-3">
                     <div className="flex flex-wrap items-center gap-2 text-sm">
                       <span className="font-medium">{person?.name ?? "(unknown)"}</span>
-                      <Badge variant={s.status === "pending" ? "default" : "secondary"}>{s.status}</Badge>
                       <span className="text-xs text-muted-foreground">
                         {new Date(s.created_at).toLocaleString()} · {s.submitter_name ?? "Anonymous"}
                         {s.submitter_email ? ` · ${s.submitter_email}` : ""}
                       </span>
                     </div>
                     <p className="mt-1 text-sm">{s.message}</p>
-                    {s.status === "pending" && (
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {(() => {
-                          try {
-                            const parsed = JSON.parse(s.message) as { type?: string };
-                            return parsed.type === "person_edit" ? (
-                              <Button size="sm" variant="secondary" onClick={() => applyEditSuggestion(s)}>Approve edit</Button>
-                            ) : null;
-                          } catch {
-                            return null;
-                          }
-                        })()}
-                        <Button size="sm" variant="secondary" onClick={() => updateSuggestion(s.id, "reviewed")}>Mark reviewed</Button>
-                        <Button size="sm" variant="ghost" onClick={() => updateSuggestion(s.id, "dismissed")}>Dismiss</Button>
-                      </div>
-                    )}
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {(() => {
+                        try {
+                          const parsed = JSON.parse(s.message) as { type?: string };
+                          return parsed.type === "person_edit" ? (
+                            <Button size="sm" variant="secondary" onClick={() => applyEditSuggestion(s)}>Approve edit</Button>
+                          ) : null;
+                        } catch {
+                          return null;
+                        }
+                      })()}
+                      <Button size="sm" variant="ghost" onClick={() => deleteSuggestion(s.id)}>Dismiss</Button>
+                    </div>
                   </li>
                 );
               })}
             </ul>
           )}
         </section>
+
 
         <section>
           <h2 className="mb-3 text-lg font-semibold">Pending join requests</h2>
@@ -778,13 +777,14 @@ function RolePermissionsSection() {
       <p className="mb-3 text-sm text-muted-foreground">
         Control what members and visitors can do inside personal/birth family trees.
       </p>
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="space-y-2">
         {roles.map((role) => (
-          <div key={role} className="rounded-md border bg-card p-4">
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="font-semibold capitalize">{role}</h3>
-            </div>
-            <div className="space-y-2">
+          <details key={role} className="group rounded-md border bg-card">
+            <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-2.5 text-sm font-semibold capitalize hover:bg-muted/40">
+              <span>{role}</span>
+              <span className="text-xs text-muted-foreground transition-transform group-open:rotate-180">▾</span>
+            </summary>
+            <div className="space-y-2 border-t px-4 py-3">
               {addKeys.map(({ key, label }) => (
                 <label key={key} className="flex items-center justify-between text-sm">
                   <span>{label}</span>
@@ -808,7 +808,7 @@ function RolePermissionsSection() {
                 </select>
               </div>
             </div>
-          </div>
+          </details>
         ))}
       </div>
       <div className="mt-3">
@@ -819,6 +819,7 @@ function RolePermissionsSection() {
     </section>
   );
 }
+
 
 
 // silence unused
