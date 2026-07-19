@@ -96,52 +96,84 @@ function Index() {
   }, [relationships, highlightId]);
 
   const mainPersonIds = useMemo(() => {
-    // All persons flagged as MAIN_FAMILY. From these we keep only the
-    // largest blood-connected component (parent/child edges) + their spouses.
-    // A married-in wife's parents/siblings form their own blood component
-    // and get excluded from the main tree.
+    // Main tree = the primary lineage founder(s) and their descendants
+    // (traversed strictly downward via parent→child edges), plus spouses
+    // of anyone reached. We deliberately do NOT traverse upward from a
+    // spouse, so a wife/husband who married in doesn't drag her/his own
+    // parents or siblings into the main tree, even if legacy data or a
+    // stale add-flow left them tagged as MAIN_FAMILY.
     const pool = persons.filter((p) => p.familyGroup === MAIN_FAMILY);
     const poolIds = new Set(pool.map((p) => p.id));
     if (pool.length === 0) return new Set<string>();
 
-    // Blood-only adjacency (parent edges) within the pool.
-    const bloodAdj = new Map<string, Set<string>>();
-    pool.forEach((p) => bloodAdj.set(p.id, new Set()));
+    // Downward child map + parent-count, restricted to the pool.
+    const children = new Map<string, string[]>();
+    const parentsOf = new Map<string, string[]>();
+    pool.forEach((p) => {
+      children.set(p.id, []);
+      parentsOf.set(p.id, []);
+    });
     relationships.forEach((r) => {
       if (r.type !== "parent") return;
       if (!poolIds.has(r.person1Id) || !poolIds.has(r.person2Id)) return;
-      bloodAdj.get(r.person1Id)!.add(r.person2Id);
-      bloodAdj.get(r.person2Id)!.add(r.person1Id);
+      children.get(r.person1Id)!.push(r.person2Id);
+      parentsOf.get(r.person2Id)!.push(r.person1Id);
     });
 
-    // Find connected components.
-    const visited = new Set<string>();
-    const components: string[][] = [];
-    for (const p of pool) {
-      if (visited.has(p.id)) continue;
-      const comp: string[] = [];
-      const stack = [p.id];
+    // Candidate roots: pool persons with no parent inside the pool.
+    const candidateRoots = pool.filter((p) => parentsOf.get(p.id)!.length === 0);
+
+    // For each candidate root, measure its downward blood reach (descendants).
+    const reachFrom = (rootId: string) => {
+      const seen = new Set<string>([rootId]);
+      const stack = [rootId];
       while (stack.length) {
         const cur = stack.pop()!;
-        if (visited.has(cur)) continue;
-        visited.add(cur);
-        comp.push(cur);
-        bloodAdj.get(cur)!.forEach((n) => {
-          if (!visited.has(n)) stack.push(n);
-        });
+        for (const child of children.get(cur) ?? []) {
+          if (!seen.has(child)) {
+            seen.add(child);
+            stack.push(child);
+          }
+        }
       }
-      components.push(comp);
+      return seen;
+    };
+
+    const rootReaches = candidateRoots.map((r) => ({ id: r.id, reach: reachFrom(r.id) }));
+    rootReaches.sort((a, b) => b.reach.size - a.reach.size);
+    const primary = rootReaches[0];
+    if (!primary) return new Set<string>();
+
+    // Union descendants of the primary root with descendants of any other
+    // root that shares a spouse with someone already in the main lineage
+    // — this covers the (rare) case where a co-founder branch belongs in
+    // the main tree, without also pulling in unrelated wife-side ancestors.
+    const mainBlood = new Set(primary.reach);
+    const spouseEdges = relationships.filter(
+      (r) =>
+        r.type === "spouse" && poolIds.has(r.person1Id) && poolIds.has(r.person2Id),
+    );
+    let grew = true;
+    while (grew) {
+      grew = false;
+      for (const { id, reach } of rootReaches) {
+        if (mainBlood.has(id)) continue;
+        const overlapsViaSpouse = spouseEdges.some((r) => {
+          const inReach = reach.has(r.person1Id) || reach.has(r.person2Id);
+          const inMain = mainBlood.has(r.person1Id) || mainBlood.has(r.person2Id);
+          return inReach && inMain;
+        });
+        if (overlapsViaSpouse) {
+          reach.forEach((pid) => mainBlood.add(pid));
+          grew = true;
+        }
+      }
     }
 
-    // Pick the largest blood component as the main lineage.
-    components.sort((a, b) => b.length - a.length);
-    const mainBlood = new Set(components[0] ?? []);
-
-    // Include spouses (in the pool) of anyone in the main blood component.
+    // Include spouses of anyone in the main lineage (but do not recurse
+    // upward into a spouse's own ancestors).
     const result = new Set(mainBlood);
-    relationships.forEach((r) => {
-      if (r.type !== "spouse") return;
-      if (!poolIds.has(r.person1Id) || !poolIds.has(r.person2Id)) return;
+    spouseEdges.forEach((r) => {
       if (mainBlood.has(r.person1Id)) result.add(r.person2Id);
       if (mainBlood.has(r.person2Id)) result.add(r.person1Id);
     });
