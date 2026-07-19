@@ -230,11 +230,36 @@ export const deleteMemberAddedPerson = createServerFn({ method: "POST" })
     if (roleError) throw roleError;
 
     const roles = (roleRows ?? []).map((row) => row.role);
-    const isVisitorOnly = roles.length > 0 && roles.every((role) => role === "visitor");
-    const canManage = !isVisitorOnly && (roles.length === 0 || roles.includes("member") || roles.includes("admin"));
-    if (!canManage) throw new Error("You need a family member account to delete relatives.");
+    const isAdmin = roles.includes("admin");
+    const effectiveRole: "admin" | "member" | "visitor" = isAdmin
+      ? "admin"
+      : roles.includes("member")
+      ? "member"
+      : "visitor";
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // Read admin-configured delete_scope for this role.
+    let deleteScope: "none" | "own" | "any" = effectiveRole === "member" ? "own" : "none";
+    if (!isAdmin) {
+      const { data: permRow } = await supabaseAdmin
+        .from("persons")
+        .select("biography")
+        .eq("id", "__permissions__")
+        .maybeSingle();
+      if (permRow?.biography) {
+        try {
+          const parsed = JSON.parse(permRow.biography) as Record<string, { delete_scope?: string }>;
+          const s = parsed[effectiveRole]?.delete_scope;
+          if (s === "none" || s === "own" || s === "any") deleteScope = s;
+        } catch {
+          /* keep default */
+        }
+      }
+      if (deleteScope === "none") {
+        throw new Error("You don't have permission to delete nodes.");
+      }
+    }
 
     const { data: target, error: targetError } = await supabaseAdmin
       .from("persons")
@@ -243,16 +268,18 @@ export const deleteMemberAddedPerson = createServerFn({ method: "POST" })
       .single();
     if (targetError) throw targetError;
 
-    const isAdmin = roles.includes("admin");
     if (!isAdmin) {
       const group = target.family_group ?? "";
       if (!group.startsWith("personal-")) {
-        throw new Error("Members can only delete relatives inside a personal family tree.");
+        throw new Error("You can only delete relatives inside a personal family tree.");
       }
       if (group === `personal-${target.id}`) {
         throw new Error("The main person of a personal tree cannot be deleted here.");
       }
 
+      // For "own" scope the UI restricts to member-created ids; for "any"
+      // we allow deleting any node in the personal tree (except the root).
+      // Both still block deletion when children exist to avoid dangling subtrees.
       const { data: children, error: childError } = await supabaseAdmin
         .from("relationships")
         .select("id")
@@ -264,6 +291,7 @@ export const deleteMemberAddedPerson = createServerFn({ method: "POST" })
         throw new Error("Remove this person's children first.");
       }
     }
+
 
     const { error: delError } = await supabaseAdmin
       .from("persons")
