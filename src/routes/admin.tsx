@@ -517,45 +517,42 @@ function AdminPage() {
           <h2 className="mb-3 text-lg font-semibold">
             Suggestions <span className="text-sm font-normal text-muted-foreground">({suggestions.filter(s => s.status === "pending").length} pending)</span>
           </h2>
-          {suggestions.length === 0 ? (
+          {suggestions.filter((s) => s.status === "pending").length === 0 ? (
             <p className="rounded-md border bg-card p-4 text-sm text-muted-foreground">No suggestions yet.</p>
           ) : (
             <ul className="space-y-2">
-              {suggestions.map((s) => {
+              {suggestions.filter((s) => s.status === "pending").map((s) => {
                 const person = persons.find((p) => p.id === s.person_id);
                 return (
                   <li key={s.id} className="rounded-md border bg-card p-3">
                     <div className="flex flex-wrap items-center gap-2 text-sm">
                       <span className="font-medium">{person?.name ?? "(unknown)"}</span>
-                      <Badge variant={s.status === "pending" ? "default" : "secondary"}>{s.status}</Badge>
                       <span className="text-xs text-muted-foreground">
                         {new Date(s.created_at).toLocaleString()} · {s.submitter_name ?? "Anonymous"}
                         {s.submitter_email ? ` · ${s.submitter_email}` : ""}
                       </span>
                     </div>
                     <p className="mt-1 text-sm">{s.message}</p>
-                    {s.status === "pending" && (
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {(() => {
-                          try {
-                            const parsed = JSON.parse(s.message) as { type?: string };
-                            return parsed.type === "person_edit" ? (
-                              <Button size="sm" variant="secondary" onClick={() => applyEditSuggestion(s)}>Approve edit</Button>
-                            ) : null;
-                          } catch {
-                            return null;
-                          }
-                        })()}
-                        <Button size="sm" variant="secondary" onClick={() => updateSuggestion(s.id, "reviewed")}>Mark reviewed</Button>
-                        <Button size="sm" variant="ghost" onClick={() => updateSuggestion(s.id, "dismissed")}>Dismiss</Button>
-                      </div>
-                    )}
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {(() => {
+                        try {
+                          const parsed = JSON.parse(s.message) as { type?: string };
+                          return parsed.type === "person_edit" ? (
+                            <Button size="sm" variant="secondary" onClick={() => applyEditSuggestion(s)}>Approve edit</Button>
+                          ) : null;
+                        } catch {
+                          return null;
+                        }
+                      })()}
+                      <Button size="sm" variant="ghost" onClick={() => deleteSuggestion(s.id)}>Dismiss</Button>
+                    </div>
                   </li>
                 );
               })}
             </ul>
           )}
         </section>
+
 
         <section>
           <h2 className="mb-3 text-lg font-semibold">Pending join requests</h2>
