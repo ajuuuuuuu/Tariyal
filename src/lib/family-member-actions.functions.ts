@@ -126,6 +126,25 @@ export const addFamilyRelative = createServerFn({ method: "POST" })
         parentSiblingGroupFor(currentPerson),
       );
       await createRelationship(parentId, currentPerson.id, "parent");
+
+      // If the focal person already has an opposite-sex parent recorded,
+      // marry the new parent to that existing one so father/mother appear
+      // connected as spouses in the personal tree.
+      const existingParentIds = relationships
+        .filter((r) => r.type === "parent" && r.person2_id === currentPerson.id)
+        .map((r) => r.person1_id);
+      if (existingParentIds.length > 0) {
+        const { data: existingParents } = await supabaseAdmin
+          .from("persons")
+          .select("id,gender")
+          .in("id", existingParentIds);
+        const wantedGender = data.action === "father" ? "female" : "male";
+        const spouseCandidate = (existingParents ?? []).find((p) => p.gender === wantedGender);
+        if (spouseCandidate) {
+          await createRelationship(parentId, spouseCandidate.id, "spouse");
+        }
+      }
+
       return { id: parentId };
     }
 
