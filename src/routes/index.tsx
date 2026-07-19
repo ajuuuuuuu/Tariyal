@@ -444,14 +444,7 @@ function Index() {
                   setSelectedFromTree("switch");
                   setSelectedId(id);
                 }}
-                onSwitchTree={(id) => {
-                  setTreeViewPersonId(id);
-                  setTreeViewMode("switch");
-                  setSelectedId(null);
-                }}
-                highlightId={treeViewPerson.id}
                 allPersons={persons}
-                showAddedIndicator
               />
             )}
           </div>
