@@ -20,7 +20,9 @@ import {
   forgetMemberCreatedPerson,
   isMemberCreatedPerson,
 } from "@/lib/member-created-persons";
+import { useRolePermissions } from "@/hooks/use-role-permissions";
 import { toast } from "sonner";
+
 
 export function PersonDetail({
   personId,
