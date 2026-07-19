@@ -29,14 +29,43 @@ export const addFamilyRelative = createServerFn({ method: "POST" })
     if (roleError) throw roleError;
 
     const roles = (roleRows ?? []).map((row) => row.role);
-    const isVisitorOnly = roles.length > 0 && roles.every((role) => role === "visitor");
-    const canAddFamily = !isVisitorOnly && (roles.length === 0 || roles.includes("member") || roles.includes("admin"));
-
-    if (!canAddFamily) {
-      throw new Error("You need a family member account to add relatives.");
-    }
+    const isAdmin = roles.includes("admin");
+    const effectiveRole: "admin" | "member" | "visitor" = isAdmin
+      ? "admin"
+      : roles.includes("member")
+      ? "member"
+      : "visitor";
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // Read the admin-configured role permissions (singleton row in persons).
+    if (!isAdmin) {
+      const { data: permRow } = await supabaseAdmin
+        .from("persons")
+        .select("biography")
+        .eq("id", "__permissions__")
+        .maybeSingle();
+      let perms: Record<string, boolean> | null = null;
+      if (permRow?.biography) {
+        try {
+          const parsed = JSON.parse(permRow.biography) as Record<string, Record<string, boolean>>;
+          perms = parsed[effectiveRole] ?? null;
+        } catch {
+          perms = null;
+        }
+      }
+      const defaults: Record<string, Record<string, boolean>> = {
+        member: { add_descendant: true, add_father: true, add_mother: true, add_brother: true, add_sister: true, add_wife: true, add_husband: true },
+        visitor: { add_descendant: false, add_father: false, add_mother: false, add_brother: false, add_sister: false, add_wife: false, add_husband: false },
+      };
+      const rolePerms = perms ?? defaults[effectiveRole];
+      const key = `add_${data.action}`;
+      if (!rolePerms[key]) {
+        throw new Error("You don't have permission to add this relative.");
+      }
+    }
+
+
     const MAIN_FAMILY = "hawthorne";
 
     const makeId = (prefix: string) =>
