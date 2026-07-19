@@ -278,7 +278,7 @@ function Index() {
     }
 
     return combined;
-  }, [persons, treeViewContext, treeViewPerson, relationships]);
+  }, [persons, treeViewContext, treeViewPerson, relationships, mainPersonIds]);
   const treeViewIds = useMemo(() => new Set(treeViewPersons.map((person) => person.id)), [treeViewPersons]);
   const treeViewRelationships = useMemo(
     () =>
