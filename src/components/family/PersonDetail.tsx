@@ -257,9 +257,11 @@ export function PersonDetail({
           )}
           {canManage && (
             <>
-              <Button size="sm" variant="secondary" onClick={() => setMode("addDesc")}>
-                Add descendant
-              </Button>
+              {allow("add_descendant") && (
+                <Button size="sm" variant="secondary" onClick={() => setMode("addDesc")}>
+                  Add descendant
+                </Button>
+              )}
               {canAddWife && (
                 <Button size="sm" variant="secondary" onClick={() => setMode("addWife")}>
                   Add wife
@@ -270,18 +272,26 @@ export function PersonDetail({
                   Add husband
                 </Button>
               )}
-              <Button size="sm" variant="secondary" onClick={() => setMode("addFather")}>
-                Add father
-              </Button>
-              <Button size="sm" variant="secondary" onClick={() => setMode("addMother")}>
-                Add mother
-              </Button>
-              <Button size="sm" variant="secondary" onClick={() => setMode("addBrother")}>
-                Add brother
-              </Button>
-              <Button size="sm" variant="secondary" onClick={() => setMode("addSister")}>
-                Add sister
-              </Button>
+              {allow("add_father") && (
+                <Button size="sm" variant="secondary" onClick={() => setMode("addFather")}>
+                  Add father
+                </Button>
+              )}
+              {allow("add_mother") && (
+                <Button size="sm" variant="secondary" onClick={() => setMode("addMother")}>
+                  Add mother
+                </Button>
+              )}
+              {allow("add_brother") && (
+                <Button size="sm" variant="secondary" onClick={() => setMode("addBrother")}>
+                  Add brother
+                </Button>
+              )}
+              {allow("add_sister") && (
+                <Button size="sm" variant="secondary" onClick={() => setMode("addSister")}>
+                  Add sister
+                </Button>
+              )}
               {isAdmin ? (
                 <Button
                   size="sm"
@@ -300,11 +310,15 @@ export function PersonDetail({
                 </Button>
               ) : (
                 (() => {
+                  const scope = rolePerms?.delete_scope ?? "none";
+                  if (scope === "none") return null;
                   const group = currentPerson.familyGroup ?? "";
                   const isPersonalGroup = group.startsWith("personal-");
                   const isGroupRoot = group === `personal-${currentPerson.id}`;
-                  const canMemberDelete = isPersonalGroup && !isGroupRoot;
-                  if (!canMemberDelete) return null;
+                  if (!isPersonalGroup || isGroupRoot) return null;
+                  if (scope === "own" && !isMemberCreatedPerson(currentUserId, currentPerson.id)) {
+                    return null;
+                  }
                   return (
                     <Button
                       size="sm"
@@ -327,6 +341,7 @@ export function PersonDetail({
 
             </>
           )}
+
         </div>
       )}
 
