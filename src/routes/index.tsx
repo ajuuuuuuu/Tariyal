@@ -219,8 +219,38 @@ function Index() {
     const groupMembers = persons.filter(
       (person) => (person.familyGroup ?? MAIN_FAMILY) === treeViewContext.group,
     );
+
+    // Legacy rescue: some relatives that a member added to their personal
+    // tree were saved with familyGroup=MAIN_FAMILY due to an earlier bug
+    // (e.g. Sushmi's mother/siblings). If they are NOT part of the main
+    // lineage (mainPersonIds), pull them into the focal person's personal
+    // tree so nothing gets orphaned.
+    const focalPersonalGroup = `personal-${treeViewPerson.id}`;
+    let rescuedForFocal: typeof persons = [];
+    if (treeViewContext.group === focalPersonalGroup) {
+      const rescued = new Set<string>();
+      const stack: string[] = [treeViewPerson.id];
+      const seen = new Set<string>([treeViewPerson.id]);
+      while (stack.length) {
+        const cur = stack.pop()!;
+        relationships.forEach((r) => {
+          const other =
+            r.person1Id === cur ? r.person2Id : r.person2Id === cur ? r.person1Id : null;
+          if (!other || seen.has(other)) return;
+          seen.add(other);
+          if (!mainPersonIds.has(other)) {
+            rescued.add(other);
+            stack.push(other);
+          }
+        });
+      }
+      rescuedForFocal = persons.filter((p) => rescued.has(p.id));
+    }
+
     const combined = Array.from(
-      new Map([treeViewPerson, ...groupMembers].map((person) => [person.id, person])).values(),
+      new Map(
+        [treeViewPerson, ...groupMembers, ...rescuedForFocal].map((person) => [person.id, person]),
+      ).values(),
     );
 
     if (!focalIsInGroup) {
