@@ -362,11 +362,9 @@ export function PersonDetail({
           onCancel={() => setMode("view")}
           onSubmit={(data) => {
             if (isAdmin) {
-              void run(() => updatePerson(currentPerson.id, data));
-              return;
+              return run(() => updatePerson(currentPerson.id, data));
             }
-
-            void run(
+            return run(
               () => submitEditRequest(data),
               "Edit request sent to admin for approval.",
               false,
