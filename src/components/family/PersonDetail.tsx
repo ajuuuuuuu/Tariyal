@@ -59,6 +59,7 @@ export function PersonDetail({
   const person = persons.find((p) => p.id === personId);
   const addFamilyRelativeFn = useServerFn(addFamilyRelative);
   const deleteMemberAddedPersonFn = useServerFn(deleteMemberAddedPerson);
+  const { getForRole } = useRolePermissions();
   const [mode, setMode] = useState<
     | "view"
     | "suggest"
@@ -76,13 +77,13 @@ export function PersonDetail({
 
   const currentPerson = person;
   const isSelf = currentUserPersonId === currentPerson.id;
-  const { getForRole } = useRolePermissions();
   const rolePerms = getForRole(userRole); // null when admin (no restrictions)
   const allow = (key: keyof NonNullable<typeof rolePerms>) => (isAdmin ? true : !!rolePerms?.[key]);
   const canManage = isAdmin || Boolean(canManageProp && (userRole === "member" || userRole === "visitor"));
   const canEdit = isAdmin || (Boolean(currentUserId) && allow("can_edit"));
   const canAddWife = canManage && currentPerson.gender === "male" && allow("add_wife");
   const canAddHusband = canManage && currentPerson.gender === "female" && allow("add_husband");
+
 
 
   const personalGroupFor = (person: Person) => {
