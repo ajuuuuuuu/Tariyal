@@ -715,5 +715,111 @@ function AdminPage() {
   );
 }
 
+function RolePermissionsSection() {
+  const [config, setConfig] = useState<import("@/lib/role-permissions").PermissionsConfig | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    import("@/lib/role-permissions").then(async ({ fetchRolePermissions }) => {
+      setConfig(await fetchRolePermissions());
+    });
+  }, []);
+
+  if (!config) {
+    return (
+      <section>
+        <h2 className="mb-3 text-lg font-semibold">Role permissions</h2>
+        <p className="rounded-md border bg-card p-4 text-sm text-muted-foreground">Loading…</p>
+      </section>
+    );
+  }
+
+  const roles: Array<"member" | "visitor"> = ["member", "visitor"];
+  const addKeys: Array<{ key: keyof import("@/lib/role-permissions").RolePerms; label: string }> = [
+    { key: "add_descendant", label: "Add descendant" },
+    { key: "add_father", label: "Add father" },
+    { key: "add_mother", label: "Add mother" },
+    { key: "add_brother", label: "Add brother" },
+    { key: "add_sister", label: "Add sister" },
+    { key: "add_wife", label: "Add wife" },
+    { key: "add_husband", label: "Add husband" },
+    { key: "can_edit", label: "Request edits" },
+  ];
+
+  const toggle = (role: "member" | "visitor", key: keyof import("@/lib/role-permissions").RolePerms) => {
+    setConfig((c) => {
+      if (!c) return c;
+      const current = c[role][key];
+      return { ...c, [role]: { ...c[role], [key]: !current } };
+    });
+  };
+
+  const setScope = (role: "member" | "visitor", value: "none" | "own" | "any") => {
+    setConfig((c) => (c ? { ...c, [role]: { ...c[role], delete_scope: value } } : c));
+  };
+
+  const save = async () => {
+    if (!config) return;
+    setSaving(true);
+    try {
+      const { saveRolePermissions } = await import("@/lib/role-permissions");
+      await saveRolePermissions(config);
+      toast.success("Permissions saved");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to save");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <section>
+      <h2 className="mb-3 text-lg font-semibold">Role permissions</h2>
+      <p className="mb-3 text-sm text-muted-foreground">
+        Control what members and visitors can do inside personal/birth family trees.
+      </p>
+      <div className="grid gap-4 md:grid-cols-2">
+        {roles.map((role) => (
+          <div key={role} className="rounded-md border bg-card p-4">
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="font-semibold capitalize">{role}</h3>
+            </div>
+            <div className="space-y-2">
+              {addKeys.map(({ key, label }) => (
+                <label key={key} className="flex items-center justify-between text-sm">
+                  <span>{label}</span>
+                  <input
+                    type="checkbox"
+                    checked={Boolean(config[role][key])}
+                    onChange={() => toggle(role, key)}
+                  />
+                </label>
+              ))}
+              <div className="pt-2">
+                <div className="mb-1 text-sm font-medium">Delete nodes in personal tree</div>
+                <select
+                  className="w-full rounded border bg-background px-2 py-1 text-sm"
+                  value={config[role].delete_scope}
+                  onChange={(e) => setScope(role, e.target.value as "none" | "own" | "any")}
+                >
+                  <option value="none">Not allowed</option>
+                  <option value="own">Only nodes they added</option>
+                  <option value="any">Any node (except tree root)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="mt-3">
+        <Button size="sm" onClick={save} disabled={saving}>
+          {saving ? "Saving…" : "Save permissions"}
+        </Button>
+      </div>
+    </section>
+  );
+}
+
+
 // silence unused
 void makeId;
