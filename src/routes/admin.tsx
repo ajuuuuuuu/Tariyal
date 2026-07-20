@@ -360,24 +360,26 @@ function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-amber-50 to-rose-50">
-      <header className="flex items-center justify-between border-b border-amber-200/50 bg-gradient-to-r from-[#0a1f3a] via-[#0d2d47] to-[#0a1f3a] px-6 py-4 shadow-lg">
+    <div className="min-h-screen bg-background text-foreground">
+      <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-card/80 px-6 py-4 shadow-sm backdrop-blur">
         <div>
-          <h1 className="text-xl font-semibold text-amber-100">Admin dashboard</h1>
-          <p className="text-sm text-amber-200/70">
+          <h1 className="text-xl font-semibold text-foreground">Admin dashboard</h1>
+          <p className="text-sm text-muted-foreground">
             {persons.length} people · {pending.length} pending request{pending.length === 1 ? "" : "s"}
           </p>
         </div>
-        <div className="flex gap-2">
-          <Link to="/"><Button variant="outline" size="sm" className="border-amber-300 bg-transparent text-amber-100 hover:bg-amber-300/20 hover:text-white">View tree</Button></Link>
-          <Button size="sm" className="bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow hover:from-amber-600 hover:to-amber-700" onClick={() => setAddOpen(true)}>Add person</Button>
-          <Button size="sm" variant="ghost" className="text-amber-100 hover:bg-white/10 hover:text-white" onClick={() => { signOut(); navigate({ to: "/" }); }}>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <Link to="/"><Button variant="outline" size="sm">View tree</Button></Link>
+          <Button size="sm" onClick={() => setAddOpen(true)}>Add person</Button>
+          <Button size="sm" variant="ghost" onClick={() => { signOut(); navigate({ to: "/" }); }}>
             Sign out
           </Button>
         </div>
       </header>
 
       <div className="mx-auto max-w-5xl space-y-8 p-6">
+
         <section className="rounded-xl border border-indigo-200 bg-white/70 p-5 shadow-sm backdrop-blur">
           <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
