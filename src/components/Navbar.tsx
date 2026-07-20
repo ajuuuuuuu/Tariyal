@@ -273,11 +273,13 @@ export function Navbar({
             {user ? (
               <DropdownMenuItem onSelect={() => onSignOut()}>Sign out</DropdownMenuItem>
             ) : (
-              <DropdownMenuItem onSelect={() => navigate({ to: "/auth" })}>Sign in</DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/auth">Sign in</Link>
+              </DropdownMenuItem>
             )}
             {user && isAdmin && (
-              <DropdownMenuItem onSelect={() => navigate({ to: "/auth" })}>
-                {role === "visitor" ? "Continue as visitor" : "Guest view"}
+              <DropdownMenuItem asChild>
+                <Link to="/auth">{role === "visitor" ? "Continue as visitor" : "Guest view"}</Link>
               </DropdownMenuItem>
             )}
             {user && isAdmin && (
