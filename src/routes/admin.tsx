@@ -32,6 +32,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { usePresence } from "@/hooks/use-presence";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { fetchRolePermissions, saveRolePermissions, type DeleteScope } from "@/lib/role-permissions";
 
 export const Route = createFileRoute("/admin")({
   ssr: false,
