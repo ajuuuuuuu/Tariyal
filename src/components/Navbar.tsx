@@ -88,6 +88,7 @@ export function Navbar({
   const navigate = useNavigate();
   const [logoError, setLogoError] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const { theme, mounted, toggle: toggleTheme } = useTheme();
 
   const meta = (user?.user_metadata ?? {}) as NavbarUserMeta;
   const googlePhoto = meta.avatar_url || meta.picture || null;
