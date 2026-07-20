@@ -33,20 +33,20 @@ export function Footer() {
         </div>
 
         {/* Desktop / tablet: full emblem with flourishes */}
-        <div className="pointer-events-none absolute left-1/2 -top-[38px] hidden -translate-x-1/2 sm:block">
+        <div className="pointer-events-none absolute left-1/2 -top-[22px] hidden -translate-x-1/2 sm:block">
           <div className="relative flex items-center">
-            <svg className="mr-2" xmlns="http://www.w3.org/2000/svg" width="90" height="30" viewBox="0 0 100 40" fill="none">
+            <svg className="mr-1.5" xmlns="http://www.w3.org/2000/svg" width="60" height="20" viewBox="0 0 100 40" fill="none">
               <path d="M0 20H95" stroke="#D4AF37" strokeWidth="2" />
               <path d="M5 20C22 5 42 5 47 20C52 35 72 35 89 20" stroke="#D4AF37" strokeWidth="1.5" />
               <circle cx="2" cy="20" r="3" fill="#D4AF37" />
               <circle cx="95" cy="20" r="3" fill="#D4AF37" />
             </svg>
 
-            <div className="flex h-[76px] w-[76px] items-center justify-center rounded-full border-2 border-[#d4af37] bg-gradient-to-b from-[#09224c] to-[#061226] shadow-2xl">
+            <div className="flex h-[44px] w-[44px] items-center justify-center rounded-full border-2 border-[#d4af37] bg-gradient-to-b from-[#09224c] to-[#061226] shadow-2xl">
               <img src="/logo-tree.png" alt="Tariyal tree logo" className="h-[70%] w-[70%] object-contain" />
             </div>
 
-            <svg className="ml-2" xmlns="http://www.w3.org/2000/svg" width="90" height="30" viewBox="0 0 100 40" fill="none">
+            <svg className="ml-1.5" xmlns="http://www.w3.org/2000/svg" width="60" height="20" viewBox="0 0 100 40" fill="none">
               <path d="M5 20H100" stroke="#D4AF37" strokeWidth="2" />
               <path d="M11 20C28 35 48 35 53 20C58 5 78 5 95 20" stroke="#D4AF37" strokeWidth="1.5" />
               <circle cx="5" cy="20" r="3" fill="#D4AF37" />
