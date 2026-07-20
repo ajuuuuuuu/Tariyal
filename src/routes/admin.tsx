@@ -483,15 +483,16 @@ function AdminPage() {
 
         <section className="rounded-xl border border-border bg-card p-5 shadow-sm">
           <h2 className="mb-3 text-lg font-semibold text-foreground">
-            Users <span className="text-sm font-normal text-sky-700/70">({profiles.length})</span>
+            Users <span className="text-sm font-normal text-muted-foreground">({profiles.length})</span>
           </h2>
-          <div className="max-h-72 overflow-y-auto rounded-lg border border-sky-100 bg-white">
+          <div className="max-h-72 overflow-y-auto rounded-lg border border-border bg-card">
             <table className="w-full text-sm">
-              <thead className="sticky top-0 z-10 bg-gradient-to-r from-sky-100 to-indigo-100 text-left text-xs uppercase text-sky-900 backdrop-blur">
+              <thead className="sticky top-0 z-10 bg-muted/50 text-left text-xs uppercase text-muted-foreground backdrop-blur">
                 <tr>
                   <th className="px-3 py-2">User</th>
                   <th className="px-3 py-2">Status</th>
                   <th className="px-3 py-2">Role</th>
+                  <th className="px-3 py-2">Delete access</th>
                   <th className="px-3 py-2">Online</th>
                 </tr>
               </thead>
@@ -507,15 +508,15 @@ function AdminPage() {
                     : r === "member" ? "border-amber-300 bg-amber-100 text-amber-800"
                     : "border-slate-300 bg-slate-100 text-slate-700";
                   return (
-                    <tr key={p.id} className="border-t border-sky-50 hover:bg-sky-50/50">
+                    <tr key={p.id} className="border-t border-border hover:bg-muted/40">
                       <td className="px-3 py-2">
-                        <div className="font-medium text-slate-900">{p.display_name ?? "(no name)"}</div>
-                        <div className="text-xs text-slate-500">{p.email}</div>
+                        <div className="font-medium text-foreground">{p.display_name ?? "(no name)"}</div>
+                        <div className="text-xs text-muted-foreground">{p.email}</div>
                       </td>
                       <td className="px-3 py-2"><Badge variant="outline" className={statusColor}>{status}</Badge></td>
                       <td className="px-3 py-2">
                         <select
-                          className="rounded border border-indigo-200 bg-indigo-50 px-2 py-1 text-xs text-indigo-900 focus:border-indigo-400 focus:outline-none"
+                          className="rounded border border-border bg-background px-2 py-1 text-xs text-foreground focus:border-ring focus:outline-none"
                           value={r}
                           disabled={p.id === user?.id}
                           onChange={(e) => changeRole(p.id, e.target.value as "admin" | "member" | "visitor")}
@@ -526,12 +527,42 @@ function AdminPage() {
                         </select>
                       </td>
                       <td className="px-3 py-2">
+                        {r === "admin" ? (
+                          <span className="text-xs text-muted-foreground">full (admin)</span>
+                        ) : (
+                          <select
+                            className="rounded border border-border bg-background px-2 py-1 text-xs text-foreground focus:border-ring focus:outline-none"
+                            value={permsQ.data?.user_overrides?.[p.id]?.delete_scope ?? "default"}
+                            onChange={(e) => {
+                              const v = e.target.value;
+                              if (v === "default") {
+                                // remove override
+                                const current = permsQ.data;
+                                if (!current) return;
+                                const uo = { ...(current.user_overrides ?? {}) };
+                                delete uo[p.id];
+                                saveRolePermissions({ ...current, user_overrides: uo })
+                                  .then(() => { toast.success("Reverted to role default"); permsQ.refetch(); })
+                                  .catch((err) => toast.error(err instanceof Error ? err.message : "Failed"));
+                              } else {
+                                setUserDeleteScope(p.id, v as DeleteScope);
+                              }
+                            }}
+                          >
+                            <option value="default">role default</option>
+                            <option value="none">no delete</option>
+                            <option value="own">only own additions</option>
+                            <option value="any">any node in personal tree</option>
+                          </select>
+                        )}
+                      </td>
+                      <td className="px-3 py-2">
                         {isOnline ? (
-                          <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700">
-                            <span className="h-2 w-2 animate-pulse rounded-full bg-green-500" /> online
+                          <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                            <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" /> online
                           </span>
                         ) : (
-                          <span className="text-xs text-slate-400">—</span>
+                          <span className="text-xs text-muted-foreground">—</span>
                         )}
                       </td>
                     </tr>
