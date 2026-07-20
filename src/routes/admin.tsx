@@ -32,6 +32,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { usePresence } from "@/hooks/use-presence";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { fetchRolePermissions, saveRolePermissions, type DeleteScope } from "@/lib/role-permissions";
 
 export const Route = createFileRoute("/admin")({
   ssr: false,
@@ -166,6 +168,30 @@ function AdminPage() {
       return (data ?? []) as VisitRow[];
     },
   });
+
+  const permsQ = useQuery({
+    queryKey: ["role_permissions_admin"],
+    enabled: isAdmin,
+    queryFn: fetchRolePermissions,
+  });
+
+  async function setUserDeleteScope(userId: string, scope: DeleteScope) {
+    const current = permsQ.data ?? (await fetchRolePermissions());
+    const next = {
+      ...current,
+      user_overrides: {
+        ...(current.user_overrides ?? {}),
+        [userId]: { delete_scope: scope },
+      },
+    };
+    try {
+      await saveRolePermissions(next);
+      toast.success("Delete access updated");
+      permsQ.refetch();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to save");
+    }
+  }
 
   const visitStats = useMemo(() => {
     const rows = visitsQ.data ?? [];
@@ -358,29 +384,31 @@ function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-amber-50 to-rose-50">
-      <header className="flex items-center justify-between border-b border-amber-200/50 bg-gradient-to-r from-[#0a1f3a] via-[#0d2d47] to-[#0a1f3a] px-6 py-4 shadow-lg">
+    <div className="min-h-screen bg-background text-foreground">
+      <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-card/80 px-6 py-4 shadow-sm backdrop-blur">
         <div>
-          <h1 className="text-xl font-semibold text-amber-100">Admin dashboard</h1>
-          <p className="text-sm text-amber-200/70">
+          <h1 className="text-xl font-semibold text-foreground">Admin dashboard</h1>
+          <p className="text-sm text-muted-foreground">
             {persons.length} people · {pending.length} pending request{pending.length === 1 ? "" : "s"}
           </p>
         </div>
-        <div className="flex gap-2">
-          <Link to="/"><Button variant="outline" size="sm" className="border-amber-300 bg-transparent text-amber-100 hover:bg-amber-300/20 hover:text-white">View tree</Button></Link>
-          <Button size="sm" className="bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow hover:from-amber-600 hover:to-amber-700" onClick={() => setAddOpen(true)}>Add person</Button>
-          <Button size="sm" variant="ghost" className="text-amber-100 hover:bg-white/10 hover:text-white" onClick={() => { signOut(); navigate({ to: "/" }); }}>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <Link to="/"><Button variant="outline" size="sm">View tree</Button></Link>
+          <Button size="sm" onClick={() => setAddOpen(true)}>Add person</Button>
+          <Button size="sm" variant="ghost" onClick={() => { signOut(); navigate({ to: "/" }); }}>
             Sign out
           </Button>
         </div>
       </header>
 
       <div className="mx-auto max-w-5xl space-y-8 p-6">
-        <section className="rounded-xl border border-indigo-200 bg-white/70 p-5 shadow-sm backdrop-blur">
+
+        <section className="rounded-xl border border-border bg-card p-5 shadow-sm">
           <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-indigo-900">Visitor traffic</h2>
-              <p className="text-sm text-indigo-700/70">Page visits over the last 30 days.</p>
+              <h2 className="text-lg font-semibold text-foreground">Visitor traffic</h2>
+              <p className="text-sm text-muted-foreground">Page visits over the last 30 days.</p>
             </div>
             <div className="grid grid-cols-3 gap-2 text-sm">
               <div className="rounded-lg border border-emerald-200 bg-gradient-to-br from-emerald-50 to-emerald-100 p-3 shadow-sm">
@@ -420,11 +448,11 @@ function AdminPage() {
           </div>
         </section>
 
-        <section className="rounded-xl border border-emerald-200 bg-white/70 p-5 shadow-sm backdrop-blur">
+        <section className="rounded-xl border border-border bg-card p-5 shadow-sm">
           <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-emerald-900">Online now</h2>
-              <p className="text-sm text-emerald-700/70">Live viewers and active admin activity.</p>
+              <h2 className="text-lg font-semibold text-foreground">Online now</h2>
+              <p className="text-sm text-muted-foreground">Live viewers and active admin activity.</p>
             </div>
             <div className="grid gap-2 sm:grid-cols-2">
               <div className="rounded-lg border border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-100 p-3 text-sm shadow-sm">
@@ -438,7 +466,7 @@ function AdminPage() {
             </div>
           </div>
           {onlineUsers.length === 0 ? (
-            <p className="rounded-lg border border-dashed border-emerald-200 bg-emerald-50/50 p-4 text-sm text-emerald-700">No one online.</p>
+            <p className="rounded-lg border border-dashed border-border bg-muted/40 p-4 text-sm text-muted-foreground">No one online.</p>
           ) : (
             <div className="flex flex-wrap gap-2">
               {onlineUsers.map((p) => (
@@ -453,17 +481,18 @@ function AdminPage() {
         </section>
 
 
-        <section className="rounded-xl border border-sky-200 bg-white/70 p-5 shadow-sm backdrop-blur">
-          <h2 className="mb-3 text-lg font-semibold text-sky-900">
-            Users <span className="text-sm font-normal text-sky-700/70">({profiles.length})</span>
+        <section className="rounded-xl border border-border bg-card p-5 shadow-sm">
+          <h2 className="mb-3 text-lg font-semibold text-foreground">
+            Users <span className="text-sm font-normal text-muted-foreground">({profiles.length})</span>
           </h2>
-          <div className="max-h-72 overflow-y-auto rounded-lg border border-sky-100 bg-white">
+          <div className="max-h-72 overflow-y-auto rounded-lg border border-border bg-card">
             <table className="w-full text-sm">
-              <thead className="sticky top-0 z-10 bg-gradient-to-r from-sky-100 to-indigo-100 text-left text-xs uppercase text-sky-900 backdrop-blur">
+              <thead className="sticky top-0 z-10 bg-muted/50 text-left text-xs uppercase text-muted-foreground backdrop-blur">
                 <tr>
                   <th className="px-3 py-2">User</th>
                   <th className="px-3 py-2">Status</th>
                   <th className="px-3 py-2">Role</th>
+                  <th className="px-3 py-2">Delete access</th>
                   <th className="px-3 py-2">Online</th>
                 </tr>
               </thead>
@@ -479,15 +508,15 @@ function AdminPage() {
                     : r === "member" ? "border-amber-300 bg-amber-100 text-amber-800"
                     : "border-slate-300 bg-slate-100 text-slate-700";
                   return (
-                    <tr key={p.id} className="border-t border-sky-50 hover:bg-sky-50/50">
+                    <tr key={p.id} className="border-t border-border hover:bg-muted/40">
                       <td className="px-3 py-2">
-                        <div className="font-medium text-slate-900">{p.display_name ?? "(no name)"}</div>
-                        <div className="text-xs text-slate-500">{p.email}</div>
+                        <div className="font-medium text-foreground">{p.display_name ?? "(no name)"}</div>
+                        <div className="text-xs text-muted-foreground">{p.email}</div>
                       </td>
                       <td className="px-3 py-2"><Badge variant="outline" className={statusColor}>{status}</Badge></td>
                       <td className="px-3 py-2">
                         <select
-                          className="rounded border border-indigo-200 bg-indigo-50 px-2 py-1 text-xs text-indigo-900 focus:border-indigo-400 focus:outline-none"
+                          className="rounded border border-border bg-background px-2 py-1 text-xs text-foreground focus:border-ring focus:outline-none"
                           value={r}
                           disabled={p.id === user?.id}
                           onChange={(e) => changeRole(p.id, e.target.value as "admin" | "member" | "visitor")}
@@ -498,12 +527,42 @@ function AdminPage() {
                         </select>
                       </td>
                       <td className="px-3 py-2">
+                        {r === "admin" ? (
+                          <span className="text-xs text-muted-foreground">full (admin)</span>
+                        ) : (
+                          <select
+                            className="rounded border border-border bg-background px-2 py-1 text-xs text-foreground focus:border-ring focus:outline-none"
+                            value={permsQ.data?.user_overrides?.[p.id]?.delete_scope ?? "default"}
+                            onChange={(e) => {
+                              const v = e.target.value;
+                              if (v === "default") {
+                                // remove override
+                                const current = permsQ.data;
+                                if (!current) return;
+                                const uo = { ...(current.user_overrides ?? {}) };
+                                delete uo[p.id];
+                                saveRolePermissions({ ...current, user_overrides: uo })
+                                  .then(() => { toast.success("Reverted to role default"); permsQ.refetch(); })
+                                  .catch((err) => toast.error(err instanceof Error ? err.message : "Failed"));
+                              } else {
+                                setUserDeleteScope(p.id, v as DeleteScope);
+                              }
+                            }}
+                          >
+                            <option value="default">role default</option>
+                            <option value="none">no delete</option>
+                            <option value="own">only own additions</option>
+                            <option value="any">any node in personal tree</option>
+                          </select>
+                        )}
+                      </td>
+                      <td className="px-3 py-2">
                         {isOnline ? (
-                          <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700">
-                            <span className="h-2 w-2 animate-pulse rounded-full bg-green-500" /> online
+                          <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                            <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" /> online
                           </span>
                         ) : (
-                          <span className="text-xs text-slate-400">—</span>
+                          <span className="text-xs text-muted-foreground">—</span>
                         )}
                       </td>
                     </tr>
@@ -520,12 +579,12 @@ function AdminPage() {
 
 
 
-        <section className="rounded-xl border border-amber-200 bg-white/70 p-5 shadow-sm backdrop-blur">
-          <h2 className="mb-3 text-lg font-semibold text-amber-900">
+        <section className="rounded-xl border border-border bg-card p-5 shadow-sm">
+          <h2 className="mb-3 text-lg font-semibold text-foreground">
             Suggestions <span className="text-sm font-normal text-amber-700/70">({suggestions.filter(s => s.status === "pending").length} pending)</span>
           </h2>
           {suggestions.filter((s) => s.status === "pending").length === 0 ? (
-            <p className="rounded-lg border border-dashed border-amber-200 bg-amber-50/50 p-4 text-sm text-amber-700">No suggestions yet.</p>
+            <p className="rounded-lg border border-dashed border-border bg-muted/40 p-4 text-sm text-muted-foreground">No suggestions yet.</p>
           ) : (
             <ul className="space-y-2">
               {suggestions.filter((s) => s.status === "pending").map((s) => {
@@ -561,10 +620,10 @@ function AdminPage() {
         </section>
 
 
-        <section className="rounded-xl border border-rose-200 bg-white/70 p-5 shadow-sm backdrop-blur">
-          <h2 className="mb-3 text-lg font-semibold text-rose-900">Pending join requests</h2>
+        <section className="rounded-xl border border-border bg-card p-5 shadow-sm">
+          <h2 className="mb-3 text-lg font-semibold text-foreground">Pending join requests</h2>
           {pending.length === 0 ? (
-            <p className="rounded-lg border border-dashed border-rose-200 bg-rose-50/50 p-6 text-sm text-rose-700">
+            <p className="rounded-lg border border-dashed border-border bg-muted/40 p-4 text-sm text-muted-foreground">
               No pending requests.
             </p>
           ) : (

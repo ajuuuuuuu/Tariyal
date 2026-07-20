@@ -24,7 +24,9 @@ export interface RolePerms {
   delete_scope: DeleteScope;
 }
 
-export type PermissionsConfig = Record<RoleKey, RolePerms>;
+export type PermissionsConfig = Record<RoleKey, RolePerms> & {
+  user_overrides?: Record<string, { delete_scope?: DeleteScope }>;
+};
 
 export const PERMISSIONS_ROW_ID = "__permissions__";
 export const META_FAMILY_GROUP = "__meta__";
@@ -61,6 +63,7 @@ function normalize(raw: unknown): PermissionsConfig {
   return {
     member: { ...base.member, ...(obj.member ?? {}) },
     visitor: { ...base.visitor, ...(obj.visitor ?? {}) },
+    user_overrides: obj.user_overrides ?? {},
   };
 }
 

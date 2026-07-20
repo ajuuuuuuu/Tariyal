@@ -11,7 +11,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { ThemeToggle, useTheme } from "@/components/ThemeToggle";
+import { Moon, Sun } from "lucide-react";
 
 /**
  * Reusable royal-styled navbar.
@@ -87,6 +88,7 @@ export function Navbar({
   const navigate = useNavigate();
   const [logoError, setLogoError] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const { theme, mounted, toggle: toggleTheme } = useTheme();
 
   const meta = (user?.user_metadata ?? {}) as NavbarUserMeta;
   const googlePhoto = meta.avatar_url || meta.picture || null;
@@ -223,7 +225,7 @@ export function Navbar({
           </>
         )}
 
-        <ThemeToggle />
+        <ThemeToggle className="hidden sm:flex" />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -251,6 +253,23 @@ export function Navbar({
               {user ? profile?.display_name ?? user.email : "Login"}
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onSelect={(e) => {
+                e.preventDefault();
+                toggleTheme();
+              }}
+              className="sm:hidden"
+            >
+              {mounted && theme === "dark" ? (
+                <>
+                  <Sun className="mr-2 h-4 w-4" /> Light mode
+                </>
+              ) : (
+                <>
+                  <Moon className="mr-2 h-4 w-4" /> Dark mode
+                </>
+              )}
+            </DropdownMenuItem>
             {user ? (
               <DropdownMenuItem onSelect={() => onSignOut()}>Sign out</DropdownMenuItem>
             ) : (
