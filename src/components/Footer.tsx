@@ -119,37 +119,42 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Mobile */}
-          <div className="px-4 pb-2 pt-8 lg:hidden">
-            <div className="flex flex-col items-center gap-2">
-              <h2 className="font-serif text-sm tracking-wider text-[#e7c978]">TARIYAL</h2>
-              <p className="text-[9px] tracking-widest text-[#e7c978]">VANSH | VANSHAWALI</p>
-              <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[10px]">
-                {navItems.map((item, i) => (
-                  <span key={item} className="flex items-center gap-2">
-                    <a href="/" className="text-[#e7c978] transition hover:text-white">
-                      {item}
-                    </a>
-                    {i < navItems.length - 1 && <span className="text-[#8e7740]">|</span>}
-                  </span>
-                ))}
+          {/* Mobile / Tablet */}
+          <div className="flex h-[48px] items-center justify-between gap-3 px-3 lg:hidden">
+            <div className="flex min-w-0 items-center gap-2">
+              <div className="relative flex h-7 w-6 shrink-0 items-center justify-center">
+                <Shield className="absolute inset-0 h-full w-full text-[#d4af37]" strokeWidth={1.5} />
+                <Crown className="relative h-3 w-3 text-[#d4af37]" />
               </div>
-              <div className="mt-1 flex gap-2">
-                {socialLinks.map(({ href, label, icon: Icon }) => (
-                  <a
-                    key={label}
-                    href={href}
-                    aria-label={label}
-                    className="flex h-7 w-7 items-center justify-center rounded-full border border-[#d4af37] text-[#d4af37]"
-                  >
-                    <Icon size={12} />
-                  </a>
-                ))}
+              <div className="min-w-0">
+                <h2 className="truncate font-serif text-[11px] leading-none tracking-wider text-[#e7c978]">
+                  TARIYAL
+                </h2>
+                <p className="mt-0.5 truncate text-[8px] tracking-[0.2em] text-[#e7c978]">
+                  VANSH | VANSHAWALI
+                </p>
               </div>
-              <p className="text-[10px] text-[#d4af37]">© 2025 Tariyal Vansh Vanshawali</p>
-              <p className="text-[9px] italic text-[#d9c07b]">All rights reserved.</p>
             </div>
+
+            <div className="flex shrink-0 items-center gap-1.5">
+              {socialLinks.map(({ href, label, icon: Icon }) => (
+                <a
+                  key={label}
+                  href={href}
+                  aria-label={label}
+                  className="flex h-6 w-6 items-center justify-center rounded-full border border-[#d4af37] text-[#d4af37]"
+                >
+                  <Icon size={10} />
+                </a>
+              ))}
+            </div>
+
+            <p className="shrink-0 text-right text-[9px] leading-tight text-[#e7c978]">
+              © 2025 Tariyal<br />
+              <span className="italic text-[#d9c07b]">All rights reserved.</span>
+            </p>
           </div>
+
         </div>
       </div>
     </footer>
