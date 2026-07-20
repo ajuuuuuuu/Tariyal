@@ -1,4 +1,6 @@
+import { useRouterState } from "@tanstack/react-router";
 import { Facebook, Instagram, Mail, MessageCircle, Shield, Crown } from "lucide-react";
+
 
 const navItems = ["Home", "Tree", "Members", "Gallery", "About Us", "Contact"];
 
