@@ -21,13 +21,13 @@ export function Footer() {
       <div className="relative">
         <div className="h-[2px] w-full bg-[#d4af37]" />
 
-        {/* Mobile: small emblem sits ABOVE the bar so it doesn't cover footer content */}
-        <div className="pointer-events-none absolute left-1/2 -top-[42px] -translate-x-1/2 sm:hidden">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[#d4af37] bg-gradient-to-b from-[#09224c] to-[#061226] shadow-xl">
+        {/* Mobile: tiny emblem sits ABOVE the bar so it doesn't cover footer content */}
+        <div className="pointer-events-none absolute left-1/2 -top-[28px] -translate-x-1/2 sm:hidden">
+          <div className="flex h-7 w-7 items-center justify-center rounded-full border border-[#d4af37] bg-gradient-to-b from-[#09224c] to-[#061226] shadow-md">
             <img
               src="/logo-tree.png"
               alt="Tariyal tree logo"
-              className="h-[70%] w-[70%] object-contain"
+              className="h-[65%] w-[65%] object-contain"
             />
           </div>
         </div>
