@@ -311,7 +311,7 @@ export function buildTree(
         source: r.person1Id,
         target: r.person2Id,
         type: "smoothstep",
-        style: { stroke: "hsl(220 60% 50%)", strokeWidth: 2 },
+        style: { stroke: "var(--tree-edge, hsl(220 60% 50%))", strokeWidth: 2 },
       });
     } else if (r.type === "spouse") {
       const p1 = positions.get(r.person1Id);
