@@ -453,13 +453,13 @@ function AdminPage() {
         </section>
 
 
-        <section>
-          <h2 className="mb-3 text-lg font-semibold">
-            Users <span className="text-sm font-normal text-muted-foreground">({profiles.length})</span>
+        <section className="rounded-xl border border-sky-200 bg-white/70 p-5 shadow-sm backdrop-blur">
+          <h2 className="mb-3 text-lg font-semibold text-sky-900">
+            Users <span className="text-sm font-normal text-sky-700/70">({profiles.length})</span>
           </h2>
-          <div className="max-h-72 overflow-y-auto rounded-md border bg-card">
+          <div className="max-h-72 overflow-y-auto rounded-lg border border-sky-100 bg-white">
             <table className="w-full text-sm">
-              <thead className="sticky top-0 z-10 bg-muted/80 text-left text-xs uppercase text-muted-foreground backdrop-blur">
+              <thead className="sticky top-0 z-10 bg-gradient-to-r from-sky-100 to-indigo-100 text-left text-xs uppercase text-sky-900 backdrop-blur">
                 <tr>
                   <th className="px-3 py-2">User</th>
                   <th className="px-3 py-2">Status</th>
@@ -473,16 +473,21 @@ function AdminPage() {
                   const isFam = !!p.person_id;
                   const status = r === "admin" ? "Admin" : isFam ? "Family member" : r === "member" ? "New member" : "Visitor";
                   const isOnline = !!online[p.id];
+                  const statusColor =
+                    r === "admin" ? "border-rose-300 bg-rose-100 text-rose-800"
+                    : isFam ? "border-emerald-300 bg-emerald-100 text-emerald-800"
+                    : r === "member" ? "border-amber-300 bg-amber-100 text-amber-800"
+                    : "border-slate-300 bg-slate-100 text-slate-700";
                   return (
-                    <tr key={p.id} className="border-t">
+                    <tr key={p.id} className="border-t border-sky-50 hover:bg-sky-50/50">
                       <td className="px-3 py-2">
-                        <div className="font-medium">{p.display_name ?? "(no name)"}</div>
-                        <div className="text-xs text-muted-foreground">{p.email}</div>
+                        <div className="font-medium text-slate-900">{p.display_name ?? "(no name)"}</div>
+                        <div className="text-xs text-slate-500">{p.email}</div>
                       </td>
-                      <td className="px-3 py-2"><Badge variant="outline">{status}</Badge></td>
+                      <td className="px-3 py-2"><Badge variant="outline" className={statusColor}>{status}</Badge></td>
                       <td className="px-3 py-2">
                         <select
-                          className="rounded border bg-background px-2 py-1 text-xs"
+                          className="rounded border border-indigo-200 bg-indigo-50 px-2 py-1 text-xs text-indigo-900 focus:border-indigo-400 focus:outline-none"
                           value={r}
                           disabled={p.id === user?.id}
                           onChange={(e) => changeRole(p.id, e.target.value as "admin" | "member" | "visitor")}
@@ -494,11 +499,11 @@ function AdminPage() {
                       </td>
                       <td className="px-3 py-2">
                         {isOnline ? (
-                          <span className="inline-flex items-center gap-1 text-xs text-green-700">
-                            <span className="h-2 w-2 rounded-full bg-green-500" /> online
+                          <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700">
+                            <span className="h-2 w-2 animate-pulse rounded-full bg-green-500" /> online
                           </span>
                         ) : (
-                          <span className="text-xs text-muted-foreground">—</span>
+                          <span className="text-xs text-slate-400">—</span>
                         )}
                       </td>
                     </tr>
@@ -508,6 +513,7 @@ function AdminPage() {
             </table>
           </div>
         </section>
+
 
 
         <RolePermissionsSection />
