@@ -1,4 +1,4 @@
-import { Facebook, Instagram, Mail, MessageCircle } from "lucide-react";
+import { Facebook, Instagram, Mail, MessageCircle, Shield, Crown } from "lucide-react";
 
 const navItems = ["Home", "Tree", "Members", "Gallery", "About Us", "Contact"];
 
@@ -11,150 +11,143 @@ const socialLinks = [
 
 export function Footer() {
   return (
-    <footer className="relative w-full bg-[#faf7f2] pt-0 sm:pt-0 -mt-24 sm:-mt-28 ">
+    <footer className="relative w-full shrink-0 bg-transparent">
+      {/* Gold divider with centered emblem */}
       <div className="relative">
         <div className="h-[2px] w-full bg-[#d4af37]" />
 
-        <div className="absolute left-1/2 -top-[58px] -translate-x-1/2">
-          <div className="relative">
-            
+        <div className="pointer-events-none absolute left-1/2 -top-[38px] -translate-x-1/2">
+          <div className="relative flex items-center">
+            {/* Left flourish */}
             <svg
-              className="absolute right-full top-1/2 -translate-y-1/2 -mr-3"
+              className="mr-2"
               xmlns="http://www.w3.org/2000/svg"
-              width="80"
-              height="28"
+              width="90"
+              height="30"
               viewBox="0 0 100 40"
               fill="none"
             >
-              <path d="M0 20H95" stroke="#D4AF37" strokeWidth="3" />
-              <path d="M0 20C17 5 37 5 42 20C47 35 67 35 84 20" stroke="#D4AF37" strokeWidth="2" />
-              <circle cx="0" cy="20" r="4" fill="#D4AF37" />
-              <circle cx="95" cy="20" r="4" fill="#D4AF37" />
+              <path d="M0 20H95" stroke="#D4AF37" strokeWidth="2" />
+              <path d="M5 20C22 5 42 5 47 20C52 35 72 35 89 20" stroke="#D4AF37" strokeWidth="1.5" />
+              <circle cx="2" cy="20" r="3" fill="#D4AF37" />
+              <circle cx="95" cy="20" r="3" fill="#D4AF37" />
             </svg>
 
-            {/* <svg
-              className="absolute right-full top-1/2 -translate-y-1/2 -mr-2"
-              xmlns="http://www.w3.org/2000/svg"
-              width="66"
-              height="28"
-              viewBox="0 0 94 40"
-              fill="none"
-            >
-              <path d="M0 20H84" stroke="#D4AF37" strokeWidth="2" />
-              <path d="M0 20C15 32 35 32 40 20C45 8 58 8 66 20" stroke="#D4AF37" strokeWidth="2" />
-            </svg> */}
-
-            <svg
-              className="absolute left-full top-1/2 -translate-y-1/2 -ml-3"
-              xmlns="http://www.w3.org/2000/svg"
-              width="80"
-              height="28"
-              viewBox="0 0 100 40"
-              fill="none"
-            >
-              <path d="M5 20H100" stroke="#D4AF37" strokeWidth="3" />
-              <path d="M13 20C30 35 50 35 55 20C60 5 80 5 97 20" stroke="#D4AF37" strokeWidth="2" />
-              <circle cx="5" cy="20" r="4" fill="#D4AF37" />
-              <circle cx="100" cy="20" r="4" fill="#D4AF37" />
-            </svg>
-
-            {/* <svg
-              className="absolute left-full top-1/2 -translate-y-1/2 -ml-2"
-              xmlns="http://www.w3.org/2000/svg"
-              width="66"
-              height="28"
-              viewBox="0 0 94 40"
-              fill="none"
-            >
-              <path d="M0 20C15 8 35 8 40 20C45 32 58 32 66 20" stroke="#D4AF37" strokeWidth="3" />
-            </svg> */}
-
-            <div className="flex h-12 w-12 items-center mt-9 justify-center rounded-full border-2 border-[#d4af37] bg-gradient-to-b from-[#09224c] to-[#061226] shadow-2xl">
+            {/* Center emblem */}
+            <div className="flex h-[76px] w-[76px] items-center justify-center rounded-full border-2 border-[#d4af37] bg-gradient-to-b from-[#09224c] to-[#061226] shadow-2xl">
               <img
                 src="/logo-tree.png"
                 alt="Tariyal tree logo"
-                className="h-full w-full object-contain"
+                className="h-[70%] w-[70%] object-contain"
               />
             </div>
+
+            {/* Right flourish */}
+            <svg
+              className="ml-2"
+              xmlns="http://www.w3.org/2000/svg"
+              width="90"
+              height="30"
+              viewBox="0 0 100 40"
+              fill="none"
+            >
+              <path d="M5 20H100" stroke="#D4AF37" strokeWidth="2" />
+              <path d="M11 20C28 35 48 35 53 20C58 5 78 5 95 20" stroke="#D4AF37" strokeWidth="1.5" />
+              <circle cx="5" cy="20" r="3" fill="#D4AF37" />
+              <circle cx="98" cy="20" r="3" fill="#D4AF37" />
+            </svg>
           </div>
         </div>
       </div>
 
+      {/* Footer bar */}
       <div className="bg-gradient-to-r from-[#071329] via-[#0a2855] to-[#0c6388]">
         <div className="mx-auto max-w-[1800px]">
-          <div className="hidden h-[52px] items-center justify-between px-6 lg:flex">
-            <div className="flex items-center gap-2">
-              <img src="/crown.png" alt="Tariyal logo" className="w-8" />
-
-              <div className="ml-2">
-                <h2 className="font-serif text-[16px] leading-none text-[#e7c978]">TARIYAL</h2>
-                <p className="text-[10px] tracking-wider text-[#e7c978]">VANSH | VANSHAWALI</p>
+          {/* Desktop */}
+          <div className="hidden h-[70px] items-center justify-between gap-4 px-6 lg:flex">
+            <div className="flex items-center gap-3">
+              <div className="relative flex h-11 w-10 items-center justify-center">
+                <Shield className="absolute inset-0 h-full w-full text-[#d4af37]" strokeWidth={1.5} />
+                <Crown className="relative h-4 w-4 text-[#d4af37]" />
+              </div>
+              <div>
+                <h2 className="font-serif text-[18px] leading-none tracking-wider text-[#e7c978]">
+                  TARIYAL
+                </h2>
+                <p className="mt-1 text-[10px] tracking-[0.2em] text-[#e7c978]">
+                  VANSH | VANSHAWALI
+                </p>
               </div>
             </div>
 
-            <div className="h-12 w-px bg-[#8e7740]" />
-
             <nav>
-              <ul className="flex items-center gap-4">
-                {navItems.map((item) => (
-                  <li key={item}>
+              <ul className="flex items-center">
+                {navItems.map((item, i) => (
+                  <li key={item} className="flex items-center">
                     <a
                       href="/"
-                      className="text-[15px] font-medium text-[#efd28b] duration-300 hover:text-white"
+                      className="px-4 text-[15px] font-medium text-[#efd28b] transition-colors duration-300 hover:text-white"
                     >
                       {item}
                     </a>
+                    {i < navItems.length - 1 && (
+                      <span className="text-[#8e7740]">|</span>
+                    )}
                   </li>
                 ))}
               </ul>
             </nav>
 
-            <div className="h-12 w-px bg-[#8e7740]" />
-
-            <div className="flex w-full justify-end gap-2">
+            <div className="flex items-center gap-2">
               {socialLinks.map(({ href, label, icon: Icon }) => (
                 <a
                   key={label}
                   href={href}
                   aria-label={label}
-                  className="flex h-6 w-6 items-center justify-center rounded-full border border-[#d4af37] text-[#d4af37] transition-all duration-300 hover:bg-[#d4af37] hover:text-[#0b1f45]"
+                  className="flex h-8 w-8 items-center justify-center rounded-full border border-[#d4af37] text-[#d4af37] transition-all duration-300 hover:bg-[#d4af37] hover:text-[#0b1f45]"
                 >
                   <Icon size={14} />
                 </a>
               ))}
             </div>
 
-            <div className="h-12 w-px bg-[#8e7740]" />
-
             <div className="text-right">
-              <h3 className="text-sm font-semibold text-[#e7c978]">© 2026 Tariyal Vansh</h3>
-              <p className="mt-1 text-[10px] text-[#d9c07b]">Preserving our heritage with pride.</p>
+              <h3 className="text-[13px] font-semibold text-[#e7c978]">
+                © 2025 Tariyal Vansh Vanshawali
+              </h3>
+              <p className="mt-1 text-[11px] italic text-[#d9c07b]">All rights reserved.</p>
             </div>
           </div>
 
-          <div className="px-4 pb-1 pt-3 lg:hidden">
-            <div className="flex flex-col items-center gap-1">
-              <h2 className="font-serif text-sm text-[#e7c978]">TARIYAL</h2>
+          {/* Mobile */}
+          <div className="px-4 pb-2 pt-8 lg:hidden">
+            <div className="flex flex-col items-center gap-2">
+              <h2 className="font-serif text-sm tracking-wider text-[#e7c978]">TARIYAL</h2>
               <p className="text-[9px] tracking-widest text-[#e7c978]">VANSH | VANSHAWALI</p>
-              <div className="grid w-full grid-cols-2 gap-x-2 gap-y-1 text-center text-[9px]">
-                {navItems.map((item) => (
-                  <a
-                    key={item}
-                    href="/"
-                    className="text-[9px] text-[#e7c978] transition hover:text-white"
-                  >
-                    {item}
-                  </a>
+              <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[10px]">
+                {navItems.map((item, i) => (
+                  <span key={item} className="flex items-center gap-2">
+                    <a href="/" className="text-[#e7c978] transition hover:text-white">
+                      {item}
+                    </a>
+                    {i < navItems.length - 1 && <span className="text-[#8e7740]">|</span>}
+                  </span>
                 ))}
               </div>
-              <div className="mb-1 flex gap-2 ">
+              <div className="mt-1 flex gap-2">
                 {socialLinks.map(({ href, label, icon: Icon }) => (
-                  <a key={label} href={href} aria-label={label} className="text-[#d4af37] text-2xl">
-                    <Icon size={1} />
+                  <a
+                    key={label}
+                    href={href}
+                    aria-label={label}
+                    className="flex h-7 w-7 items-center justify-center rounded-full border border-[#d4af37] text-[#d4af37]"
+                  >
+                    <Icon size={12} />
                   </a>
                 ))}
               </div>
-              <p className="text-center text-[#d4af37]">© 2026 Tariyal Vansh</p>
+              <p className="text-[10px] text-[#d4af37]">© 2025 Tariyal Vansh Vanshawali</p>
+              <p className="text-[9px] italic text-[#d9c07b]">All rights reserved.</p>
             </div>
           </div>
         </div>
