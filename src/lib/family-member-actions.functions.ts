@@ -249,9 +249,16 @@ export const deleteMemberAddedPerson = createServerFn({ method: "POST" })
         .maybeSingle();
       if (permRow?.biography) {
         try {
-          const parsed = JSON.parse(permRow.biography) as Record<string, { delete_scope?: string }>;
-          const s = parsed[effectiveRole]?.delete_scope;
+          const parsed = JSON.parse(permRow.biography) as {
+            [k: string]: { delete_scope?: string } | Record<string, { delete_scope?: string }> | undefined;
+            user_overrides?: Record<string, { delete_scope?: string }>;
+          };
+          const roleEntry = parsed[effectiveRole] as { delete_scope?: string } | undefined;
+          const s = roleEntry?.delete_scope;
           if (s === "none" || s === "own" || s === "any") deleteScope = s;
+          // Per-user override wins over role default.
+          const uo = parsed.user_overrides?.[context.userId]?.delete_scope;
+          if (uo === "none" || uo === "own" || uo === "any") deleteScope = uo;
         } catch {
           /* keep default */
         }
