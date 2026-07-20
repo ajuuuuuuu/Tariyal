@@ -225,7 +225,7 @@ export function Navbar({
           </>
         )}
 
-        <ThemeToggle />
+        <ThemeToggle className="hidden sm:flex" />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -253,6 +253,23 @@ export function Navbar({
               {user ? profile?.display_name ?? user.email : "Login"}
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onSelect={(e) => {
+                e.preventDefault();
+                toggleTheme();
+              }}
+              className="sm:hidden"
+            >
+              {mounted && theme === "dark" ? (
+                <>
+                  <Sun className="mr-2 h-4 w-4" /> Light mode
+                </>
+              ) : (
+                <>
+                  <Moon className="mr-2 h-4 w-4" /> Dark mode
+                </>
+              )}
+            </DropdownMenuItem>
             {user ? (
               <DropdownMenuItem onSelect={() => onSignOut()}>Sign out</DropdownMenuItem>
             ) : (
