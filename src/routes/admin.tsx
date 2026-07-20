@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -34,6 +34,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { fetchRolePermissions, saveRolePermissions, type DeleteScope } from "@/lib/role-permissions";
+import type { Person } from "@/lib/family-data";
 
 export const Route = createFileRoute("/admin")({
   ssr: false,
@@ -81,6 +82,8 @@ function AdminPage() {
   const { user, profile, isAdmin, loading, signOut } = useAuth();
   const [addOpen, setAddOpen] = useState(false);
   const [spouseHusbandId, setSpouseHusbandId] = useState<string>("");
+  const [hiddenSuggestions, setHiddenSuggestions] = useState<Set<string>>(new Set());
+  const [hiddenRequests, setHiddenRequests] = useState<Set<string>>(new Set());
   const spouseSectionRef = useRef<HTMLDivElement | null>(null);
 
   function manageSpousesFor(id: string) {
@@ -236,15 +239,14 @@ function AdminPage() {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <p className="text-sm text-muted-foreground">You don't have admin access.</p>
+          <p className="text-sm text-muted-foreground">You don&apos;t have admin access.</p>
           <Link to="/"><Button variant="outline" size="sm" className="mt-3">Back to tree</Button></Link>
         </div>
       </div>
     );
 
   const persons = family.data?.persons ?? [];
-  const pending = (reqs.data ?? []).filter((r) => r.status === "pending");
-  const decided = (reqs.data ?? []).filter((r) => r.status !== "pending");
+  const pending = (reqs.data ?? []).filter((r) => r.status === "pending" && !hiddenRequests.has(r.id));
   const profiles = profilesQ.data ?? [];
   const allRoles = rolesQ.data ?? [];
   const roleByUser = new Map<string, "admin" | "member" | "visitor">();
@@ -254,7 +256,7 @@ function AdminPage() {
     const rank = { admin: 3, member: 2, visitor: 1 } as const;
     if (!prev || rank[r.role] > rank[prev]) roleByUser.set(r.user_id, r.role);
   });
-  const suggestions = suggestionsQ.data ?? [];
+  const suggestions = (suggestionsQ.data ?? []).filter((s) => !hiddenSuggestions.has(s.id));
 
   async function changeRole(userId: string, newRole: "admin" | "member" | "visitor") {
     const { error: dErr } = await supabase.from("user_roles").delete().eq("user_id", userId);
@@ -266,12 +268,23 @@ function AdminPage() {
   }
 
   async function deleteSuggestion(id: string) {
+    setHiddenSuggestions((prev) => new Set(prev).add(id));
     const { error } = await supabase.from("suggestions").delete().eq("id", id);
-    if (error) toast.error(error.message);
-    else { toast.success("Removed"); suggestionsQ.refetch(); }
+    if (error) {
+      toast.error(error.message);
+      setHiddenSuggestions((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    } else {
+      toast.success("Removed");
+      suggestionsQ.refetch();
+    }
   }
 
   async function applyEditSuggestion(s: SuggestionRow) {
+    setHiddenSuggestions((prev) => new Set(prev).add(s.id));
     try {
       const parsed = JSON.parse(s.message) as {
         type?: string;
@@ -314,12 +327,18 @@ function AdminPage() {
       suggestionsQ.refetch();
       family.refetch();
     } catch (err) {
+      setHiddenSuggestions((prev) => {
+        const next = new Set(prev);
+        next.delete(s.id);
+        return next;
+      });
       toast.error(err instanceof Error ? err.message : "Failed to apply edit request");
     }
   }
 
 
   async function approve(r: JoinRequest) {
+    setHiddenRequests((prev) => new Set(prev).add(r.id));
     try {
       const parent = persons.find((p) => p.id === r.parent_person_id);
       const newPerson = await addPerson({
@@ -359,25 +378,37 @@ function AdminPage() {
       if (pErr) throw pErr;
       const { error: rErr } = await supabase
         .from("join_requests")
-        .update({ status: "approved", decided_at: new Date().toISOString() })
+        .delete()
         .eq("id", r.id);
       if (rErr) throw rErr;
       toast.success("Approved — node added to the tree");
       reqs.refetch();
       family.refetch();
     } catch (err) {
+      setHiddenRequests((prev) => {
+        const next = new Set(prev);
+        next.delete(r.id);
+        return next;
+      });
       toast.error(err instanceof Error ? err.message : "Approve failed");
     }
   }
 
   async function reject(r: JoinRequest) {
-    const note = prompt("Optional note for rejection?") ?? null;
+    if (!confirm(`Reject request from ${r.proposed_name}? This cannot be undone.`)) return;
+    setHiddenRequests((prev) => new Set(prev).add(r.id));
     const { error } = await supabase
       .from("join_requests")
-      .update({ status: "rejected", admin_note: note, decided_at: new Date().toISOString() })
+      .delete()
       .eq("id", r.id);
-    if (error) toast.error(error.message);
-    else {
+    if (error) {
+      setHiddenRequests((prev) => {
+        const next = new Set(prev);
+        next.delete(r.id);
+        return next;
+      });
+      toast.error(error.message);
+    } else {
       toast.success("Request rejected");
       reqs.refetch();
     }
@@ -621,72 +652,86 @@ function AdminPage() {
 
 
         <section className="rounded-xl border border-border bg-card p-5 shadow-sm">
-          <h2 className="mb-3 text-lg font-semibold text-foreground">Pending join requests</h2>
+          <h2 className="mb-3 text-lg font-semibold text-foreground">
+            Pending join requests <span className="text-sm font-normal text-muted-foreground">({pending.length})</span>
+          </h2>
           {pending.length === 0 ? (
             <p className="rounded-lg border border-dashed border-border bg-muted/40 p-4 text-sm text-muted-foreground">
               No pending requests.
             </p>
           ) : (
-            <ul className="space-y-3">
-              {pending.map((r) => {
-                const parent = persons.find((p) => p.id === r.parent_person_id);
-                return (
-                  <li key={r.id} className="rounded-lg border border-rose-200 bg-gradient-to-br from-rose-50 to-pink-50 p-4 shadow-sm">
-                    <div className="flex items-start gap-4">
-                      {r.proposed_photo_url ? (
-                        <img src={r.proposed_photo_url} alt="" className="h-16 w-16 rounded-full border-2 border-rose-200 object-cover" />
-                      ) : (
-                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-rose-200 to-pink-300 text-sm font-semibold text-rose-900">
-                          {r.proposed_name.split(" ").map((s) => s[0]).slice(0, 2).join("")}
-                        </div>
-                      )}
-                      <div className="flex-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="font-semibold text-rose-900">{r.proposed_name}</span>
-                          <Badge className="bg-rose-600 text-white hover:bg-rose-700">{r.relation} of {parent?.name ?? "(unknown)"}</Badge>
-                          <span className="text-xs text-rose-700/70">
-                            {new Date(r.created_at).toLocaleString()}
-                          </span>
-                        </div>
-                        <p className="mt-1 text-xs text-rose-700/80">
-                          {r.proposed_gender}
-                          {r.proposed_birth_date ? ` · born ${r.proposed_birth_date}` : ""}
-                        </p>
-                        {r.proposed_biography && (
-                          <p className="mt-2 text-sm text-slate-800">{r.proposed_biography}</p>
-                        )}
-                        {r.message && (
-                          <p className="mt-2 rounded bg-white/70 p-2 text-sm italic text-slate-700">
-                            "{r.message}"
-                          </p>
-                        )}
-                      </div>
-                      <div className="flex flex-col gap-1">
-                        <Button size="sm" className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-600 hover:to-emerald-700" onClick={() => approve(r)}>Approve & add</Button>
-                        <Button size="sm" variant="ghost" className="text-rose-700 hover:bg-rose-100 hover:text-rose-800" onClick={() => reject(r)}>Reject</Button>
-                      </div>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
+            <div className="max-h-96 overflow-y-auto rounded-lg border border-border bg-card">
+              <table className="w-full text-sm">
+                <thead className="sticky top-0 z-10 bg-muted/50 text-left text-xs uppercase text-muted-foreground backdrop-blur">
+                  <tr>
+                    <th className="px-3 py-2">Person</th>
+                    <th className="px-3 py-2">Relation</th>
+                    <th className="px-3 py-2">Details</th>
+                    <th className="px-3 py-2">Submitted</th>
+                    <th className="px-3 py-2 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pending.map((r) => {
+                    const parent = persons.find((p) => p.id === r.parent_person_id);
+                    return (
+                      <tr key={r.id} className="border-t border-border align-top hover:bg-muted/40">
+                        <td className="px-3 py-2">
+                          <div className="flex items-center gap-2">
+                            {r.proposed_photo_url ? (
+                              <img src={r.proposed_photo_url} alt="" className="h-8 w-8 rounded-full border object-cover" />
+                            ) : (
+                              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-rose-200 to-pink-300 text-xs font-semibold text-rose-900">
+                                {r.proposed_name.split(" ").map((s) => s[0]).slice(0, 2).join("")}
+                              </div>
+                            )}
+                            <span className="font-medium text-foreground">{r.proposed_name}</span>
+                          </div>
+                        </td>
+                        <td className="px-3 py-2">
+                          <Badge className="bg-rose-600 text-white hover:bg-rose-700">
+                            {r.relation} of {parent?.name ?? "(unknown)"}
+                          </Badge>
+                        </td>
+                        <td className="px-3 py-2 text-xs text-muted-foreground">
+                          <div>{r.proposed_gender}{r.proposed_birth_date ? ` · born ${r.proposed_birth_date}` : ""}</div>
+                          {r.message && (
+                            <div className="mt-1 italic text-slate-600 dark:text-slate-300">&ldquo;{r.message}&rdquo;</div>
+                          )}
+                        </td>
+                        <td className="px-3 py-2 text-xs text-muted-foreground whitespace-nowrap">
+                          {new Date(r.created_at).toLocaleString()}
+                        </td>
+                        <td className="px-3 py-2 text-right">
+                          <div className="flex justify-end gap-1">
+                            <Button
+                              size="sm"
+                              data-testid={`approve-request-${r.id}`}
+                              className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-600 hover:to-emerald-700"
+                              onClick={() => approve(r)}
+                            >
+                              Approve
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              data-testid={`reject-request-${r.id}`}
+                              className="text-rose-700 hover:bg-rose-100 hover:text-rose-800"
+                              onClick={() => reject(r)}
+                            >
+                              Reject
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           )}
         </section>
 
-
-        {decided.length > 0 && (
-          <section>
-            <h2 className="mb-3 text-lg font-semibold">Recently decided</h2>
-            <ul className="space-y-1 text-sm">
-              {decided.slice(0, 10).map((r) => (
-                <li key={r.id} className="flex items-center justify-between rounded border bg-card px-3 py-2">
-                  <span>{r.proposed_name}</span>
-                  <Badge variant={r.status === "approved" ? "default" : "secondary"}>{r.status}</Badge>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
 
         <section ref={spouseSectionRef}>
           <h2 className="mb-3 text-lg font-semibold">Manage spouses</h2>
@@ -713,46 +758,10 @@ function AdminPage() {
         </section>
 
         <section>
-          <h2 className="mb-3 text-lg font-semibold">People in the tree</h2>
-          <ul className="grid gap-2 sm:grid-cols-2">
-            {persons.map((p) => (
-              <li key={p.id} className="flex items-center justify-between rounded-md border bg-card p-3">
-                <div>
-                  <div className="text-sm font-medium">{p.name}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {p.birthDate?.slice(0, 4) || "?"} – {p.deathDate?.slice(0, 4) || ""}
-                  </div>
-                </div>
-                <div className="flex gap-1">
-                  {p.gender === "male" && (
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={() => manageSpousesFor(p.id)}
-                    >
-                      Wives
-                    </Button>
-                  )}
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={async () => {
-                      if (!confirm(`Delete ${p.name}?`)) return;
-                      try {
-                        await deletePerson(p.id);
-                        toast.success("Deleted");
-                        family.refetch();
-                      } catch (err) {
-                        toast.error(err instanceof Error ? err.message : "Failed");
-                      }
-                    }}
-                  >
-                    Delete
-                  </Button>
-                </div>
-              </li>
-            ))}
-          </ul>
+          <h2 className="mb-3 text-lg font-semibold">
+            People in the tree <span className="text-sm font-normal text-muted-foreground">({persons.length})</span>
+          </h2>
+          <PeopleList persons={persons} onManageSpouses={manageSpousesFor} onRefetch={() => family.refetch()} />
         </section>
       </div>
 
@@ -891,3 +900,104 @@ function RolePermissionsSection() {
 
 // silence unused
 void makeId;
+
+const PAGE_SIZE = 30;
+
+function PeopleList({
+  persons,
+  onManageSpouses,
+  onRefetch,
+}: {
+  persons: Person[];
+  onManageSpouses: (id: string) => void;
+  onRefetch: () => void;
+}) {
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+
+  const loadMore = useCallback(() => {
+    setVisibleCount((c) => Math.min(c + PAGE_SIZE, persons.length));
+  }, [persons.length]);
+
+  useEffect(() => {
+    // Reset visible count if list shrinks below current count
+    setVisibleCount((c) => Math.min(Math.max(PAGE_SIZE, c), Math.max(PAGE_SIZE, persons.length)));
+  }, [persons.length]);
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    const root = scrollRef.current;
+    if (!el || !root) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) loadMore();
+      },
+      { root, rootMargin: "120px", threshold: 0 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [loadMore, visibleCount]);
+
+  const visible = persons.slice(0, visibleCount);
+
+  return (
+    <div
+      ref={scrollRef}
+      data-testid="people-in-tree-scroll"
+      className="max-h-96 overflow-y-auto rounded-lg border border-border bg-card"
+    >
+      <ul className="grid gap-2 p-3 sm:grid-cols-2">
+        {visible.map((p) => (
+          <li
+            key={p.id}
+            data-testid={`person-row-${p.id}`}
+            className="flex items-center justify-between rounded-md border bg-card p-3"
+          >
+            <div>
+              <div className="text-sm font-medium">{p.name}</div>
+              <div className="text-xs text-muted-foreground">
+                {p.birthDate?.slice(0, 4) || "?"} – {p.deathDate?.slice(0, 4) || ""}
+              </div>
+            </div>
+            <div className="flex gap-1">
+              {p.gender === "male" && (
+                <Button size="sm" variant="secondary" onClick={() => onManageSpouses(p.id)}>
+                  Wives
+                </Button>
+              )}
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={async () => {
+                  if (!confirm(`Delete ${p.name}?`)) return;
+                  try {
+                    await deletePerson(p.id);
+                    toast.success("Deleted");
+                    onRefetch();
+                  } catch (err) {
+                    toast.error(err instanceof Error ? err.message : "Failed");
+                  }
+                }}
+              >
+                Delete
+              </Button>
+            </div>
+          </li>
+        ))}
+      </ul>
+      {visibleCount < persons.length && (
+        <div
+          ref={sentinelRef}
+          data-testid="people-in-tree-sentinel"
+          className="py-3 text-center text-xs text-muted-foreground"
+        >
+          Loading more… ({visibleCount}/{persons.length})
+        </div>
+      )}
+      {persons.length === 0 && (
+        <div className="p-4 text-sm text-muted-foreground">No people yet.</div>
+      )}
+    </div>
+  );
+}
