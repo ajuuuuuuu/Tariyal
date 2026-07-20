@@ -116,36 +116,36 @@ export function Footer() {
           </div>
 
           {/* Mobile / Tablet */}
-          <div className="flex min-h-[44px] items-center justify-between gap-2 px-2 py-1.5 lg:hidden">
-            <div className="flex min-w-0 items-center gap-1.5">
-              <div className="relative flex h-6 w-5 shrink-0 items-center justify-center">
+          <div className="flex min-h-[34px] items-center justify-between gap-1.5 px-2 py-1 lg:hidden">
+            <div className="flex min-w-0 items-center gap-1">
+              <div className="relative flex h-5 w-4 shrink-0 items-center justify-center">
                 <Shield className="absolute inset-0 h-full w-full text-[#d4af37]" strokeWidth={1.5} />
-                <Crown className="relative h-2.5 w-2.5 text-[#d4af37]" />
+                <Crown className="relative h-2 w-2 text-[#d4af37]" />
               </div>
               <div className="min-w-0">
-                <h2 className="truncate font-serif text-[10px] leading-none tracking-wider text-[#e7c978]">
+                <h2 className="truncate font-serif text-[9px] leading-none tracking-wider text-[#e7c978]">
                   TARIYAL
                 </h2>
-                <p className="mt-0.5 truncate text-[7px] tracking-[0.18em] text-[#e7c978]">
+                <p className="mt-0.5 truncate text-[6px] tracking-[0.15em] text-[#e7c978]">
                   VANSH | VANSHAWALI
                 </p>
               </div>
             </div>
 
-            <div className="flex shrink-0 items-center gap-1">
+            <div className="flex shrink-0 items-center gap-0.5">
               {socialLinks.map(({ href, label, icon: Icon }) => (
                 <a
                   key={label}
                   href={href}
                   aria-label={label}
-                  className="flex h-5 w-5 items-center justify-center rounded-full border border-[#d4af37] text-[#d4af37] max-[360px]:h-[18px] max-[360px]:w-[18px]"
+                  className="flex h-4 w-4 items-center justify-center rounded-full border border-[#d4af37] text-[#d4af37] max-[360px]:h-[14px] max-[360px]:w-[14px]"
                 >
-                  <Icon size={9} />
+                  <Icon size={8} className="max-[360px]:size-2" />
                 </a>
               ))}
             </div>
 
-            <p className="shrink-0 text-right text-[8px] leading-tight text-[#e7c978]">
+            <p className="shrink-0 text-right text-[7px] leading-tight text-[#e7c978]">
               © 2025 Tariyal<br />
               <span className="italic text-[#d9c07b]">All rights reserved.</span>
             </p>
