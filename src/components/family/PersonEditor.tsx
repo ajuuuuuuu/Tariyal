@@ -4,6 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { saveStatus } from "@/lib/save-status";
 import {
   Select,
   SelectContent,
@@ -55,8 +57,30 @@ export function PersonEditor({
       className="space-y-3"
       onSubmit={async (e) => {
         e.preventDefault();
-        if (!name.trim() || submitting) return;
+        if (submitting) return;
+        if (!name.trim()) {
+          toast.error("Please insert information to save.");
+          saveStatus.notSaved("Please insert information to save");
+          return;
+        }
+        // Dirty check when editing an existing person: require at least one changed field.
+        if (initial && Object.keys(initial).length > 0) {
+          const norm = (v: unknown) => (v == null ? "" : String(v));
+          const changed =
+            norm(initial.name) !== name.trim() ||
+            norm(initial.gender) !== gender ||
+            norm(initial.birthDate) !== birthDate ||
+            norm(initial.deathDate) !== deathDate ||
+            norm(initial.photoUrl) !== photoUrl ||
+            norm(initial.biography) !== biography;
+          if (!changed) {
+            toast.error("Please insert information to save.");
+            saveStatus.notSaved("Please insert information to save");
+            return;
+          }
+        }
         setSubmitting(true);
+        saveStatus.saving();
         try {
           await onSubmit({
             name: name.trim(),
@@ -66,6 +90,10 @@ export function PersonEditor({
             photoUrl: photoUrl || undefined,
             biography: biography || undefined,
           });
+          saveStatus.saved();
+        } catch (err) {
+          saveStatus.error(err instanceof Error ? err.message : "Save failed");
+          throw err;
         } finally {
           setSubmitting(false);
         }
