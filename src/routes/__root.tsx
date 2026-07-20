@@ -12,6 +12,8 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Footer } from "../components/Footer";
+import { Toaster } from "../components/ui/sonner";
+import { SaveStatusIndicator } from "../components/SaveStatusIndicator";
 
 function NotFoundComponent() {
   return (
@@ -131,6 +133,8 @@ function RootComponent() {
         </div>
         <Footer />
       </div>
+      <SaveStatusIndicator />
+      <Toaster richColors closeButton position="top-center" />
     </QueryClientProvider>
 
   );

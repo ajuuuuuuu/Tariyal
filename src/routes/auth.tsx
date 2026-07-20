@@ -134,11 +134,23 @@ function FamilySignIn({ onDone }: { onDone: () => void }) {
         if (error) throw error;
 
         if (data.session) {
-          await supabase.auth.signOut();
-          toast.success("Account created. Please sign in with your email and password.");
-        } else {
-          toast.success("Account created. Please verify your email, then sign in.");
+          // Email confirmations are off — user is signed in. Go straight in.
+          toast.success("Account created. Welcome!");
+          onDone();
+          return;
         }
+        // Email confirmations are on — try to sign in immediately in case the
+        // project auto-confirms via trigger; otherwise surface a clear message.
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: normalizedEmail,
+          password,
+        });
+        if (!signInError) {
+          toast.success("Account created. Welcome!");
+          onDone();
+          return;
+        }
+        toast.success("Account created. Please verify your email, then sign in.");
         setMode("signin");
         setPassword("");
         return;
@@ -154,7 +166,11 @@ function FamilySignIn({ onDone }: { onDone: () => void }) {
         status === 429 || /rate|too many|429/i.test(raw)
           ? "Too many attempts. Please wait a minute and try again."
           : /email.*not.*confirm|confirm.*email|not confirmed/i.test(raw)
-          ? "Please verify your email first, then sign in with the same email and password."
+          ? "Please verify your email first (check your inbox), then sign in."
+          : /invalid login credentials|invalid.*password/i.test(raw)
+          ? "Invalid email or password. Please try again."
+          : /user already registered|already.*exist/i.test(raw)
+          ? "An account with this email already exists. Please sign in instead."
           : raw;
       toast.error(friendly);
     } finally {
