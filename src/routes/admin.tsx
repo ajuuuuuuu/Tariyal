@@ -358,46 +358,46 @@ function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-muted/20">
-      <header className="flex items-center justify-between border-b bg-card px-6 py-4">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-amber-50 to-rose-50">
+      <header className="flex items-center justify-between border-b border-amber-200/50 bg-gradient-to-r from-[#0a1f3a] via-[#0d2d47] to-[#0a1f3a] px-6 py-4 shadow-lg">
         <div>
-          <h1 className="text-xl font-semibold">Admin dashboard</h1>
-          <p className="text-sm text-muted-foreground">
+          <h1 className="text-xl font-semibold text-amber-100">Admin dashboard</h1>
+          <p className="text-sm text-amber-200/70">
             {persons.length} people · {pending.length} pending request{pending.length === 1 ? "" : "s"}
           </p>
         </div>
         <div className="flex gap-2">
-          <Link to="/"><Button variant="outline" size="sm">View tree</Button></Link>
-          <Button size="sm" onClick={() => setAddOpen(true)}>Add person</Button>
-          <Button size="sm" variant="ghost" onClick={() => { signOut(); navigate({ to: "/" }); }}>
+          <Link to="/"><Button variant="outline" size="sm" className="border-amber-300 bg-transparent text-amber-100 hover:bg-amber-300/20 hover:text-white">View tree</Button></Link>
+          <Button size="sm" className="bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow hover:from-amber-600 hover:to-amber-700" onClick={() => setAddOpen(true)}>Add person</Button>
+          <Button size="sm" variant="ghost" className="text-amber-100 hover:bg-white/10 hover:text-white" onClick={() => { signOut(); navigate({ to: "/" }); }}>
             Sign out
           </Button>
         </div>
       </header>
 
       <div className="mx-auto max-w-5xl space-y-8 p-6">
-        <section>
+        <section className="rounded-xl border border-indigo-200 bg-white/70 p-5 shadow-sm backdrop-blur">
           <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h2 className="text-lg font-semibold">Visitor traffic</h2>
-              <p className="text-sm text-muted-foreground">Page visits over the last 30 days.</p>
+              <h2 className="text-lg font-semibold text-indigo-900">Visitor traffic</h2>
+              <p className="text-sm text-indigo-700/70">Page visits over the last 30 days.</p>
             </div>
             <div className="grid grid-cols-3 gap-2 text-sm">
-              <div className="rounded-md border bg-muted p-3">
-                <div className="text-muted-foreground">Today</div>
-                <div className="mt-1 text-xl font-semibold">{visitStats.today}</div>
+              <div className="rounded-lg border border-emerald-200 bg-gradient-to-br from-emerald-50 to-emerald-100 p-3 shadow-sm">
+                <div className="text-xs font-medium text-emerald-700">Today</div>
+                <div className="mt-1 text-xl font-bold text-emerald-900">{visitStats.today}</div>
               </div>
-              <div className="rounded-md border bg-muted p-3">
-                <div className="text-muted-foreground">30d visits</div>
-                <div className="mt-1 text-xl font-semibold">{visitStats.total}</div>
+              <div className="rounded-lg border border-sky-200 bg-gradient-to-br from-sky-50 to-sky-100 p-3 shadow-sm">
+                <div className="text-xs font-medium text-sky-700">30d visits</div>
+                <div className="mt-1 text-xl font-bold text-sky-900">{visitStats.total}</div>
               </div>
-              <div className="rounded-md border bg-muted p-3">
-                <div className="text-muted-foreground">Unique</div>
-                <div className="mt-1 text-xl font-semibold">{visitStats.uniqueTotal}</div>
+              <div className="rounded-lg border border-violet-200 bg-gradient-to-br from-violet-50 to-violet-100 p-3 shadow-sm">
+                <div className="text-xs font-medium text-violet-700">Unique</div>
+                <div className="mt-1 text-xl font-bold text-violet-900">{visitStats.uniqueTotal}</div>
               </div>
             </div>
           </div>
-          <div className="h-64 rounded-md border bg-card p-3">
+          <div className="h-64 rounded-lg border border-indigo-100 bg-white p-3">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={visitStats.days} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
                 <defs>
@@ -420,45 +420,46 @@ function AdminPage() {
           </div>
         </section>
 
-        <section>
+        <section className="rounded-xl border border-emerald-200 bg-white/70 p-5 shadow-sm backdrop-blur">
           <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h2 className="text-lg font-semibold">Online now</h2>
-              <p className="text-sm text-muted-foreground">Live viewers and active admin activity.</p>
+              <h2 className="text-lg font-semibold text-emerald-900">Online now</h2>
+              <p className="text-sm text-emerald-700/70">Live viewers and active admin activity.</p>
             </div>
             <div className="grid gap-2 sm:grid-cols-2">
-              <div className="rounded-md border bg-muted p-3 text-sm">
-                <div className="text-muted-foreground">Viewers online</div>
-                <div className="mt-2 text-xl font-semibold">{visitorOnline.length}</div>
+              <div className="rounded-lg border border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-100 p-3 text-sm shadow-sm">
+                <div className="text-xs font-medium text-emerald-700">Viewers online</div>
+                <div className="mt-2 text-xl font-bold text-emerald-900">{visitorOnline.length}</div>
               </div>
-              <div className="rounded-md border bg-muted p-3 text-sm">
-                <div className="text-muted-foreground">Total active</div>
-                <div className="mt-2 text-xl font-semibold">{onlineUsers.length}</div>
+              <div className="rounded-lg border border-teal-200 bg-gradient-to-br from-teal-50 to-cyan-100 p-3 text-sm shadow-sm">
+                <div className="text-xs font-medium text-teal-700">Total active</div>
+                <div className="mt-2 text-xl font-bold text-teal-900">{onlineUsers.length}</div>
               </div>
             </div>
           </div>
           {onlineUsers.length === 0 ? (
-            <p className="rounded-md border bg-card p-4 text-sm text-muted-foreground">No one online.</p>
+            <p className="rounded-lg border border-dashed border-emerald-200 bg-emerald-50/50 p-4 text-sm text-emerald-700">No one online.</p>
           ) : (
             <div className="flex flex-wrap gap-2">
               {onlineUsers.map((p) => (
-                <div key={p.user_id} className="flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-sm">
-                  <span className="h-2 w-2 rounded-full bg-green-500" />
-                  <span>{p.display_name}</span>
-                  <Badge variant="secondary" className="text-[10px]">{p.role}</Badge>
+                <div key={p.user_id} className="flex items-center gap-2 rounded-full border border-emerald-300 bg-gradient-to-r from-emerald-50 to-teal-50 px-3 py-1 text-sm shadow-sm">
+                  <span className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
+                  <span className="text-emerald-900">{p.display_name}</span>
+                  <Badge variant="secondary" className="bg-emerald-200 text-[10px] text-emerald-900">{p.role}</Badge>
                 </div>
               ))}
             </div>
           )}
         </section>
 
-        <section>
-          <h2 className="mb-3 text-lg font-semibold">
-            Users <span className="text-sm font-normal text-muted-foreground">({profiles.length})</span>
+
+        <section className="rounded-xl border border-sky-200 bg-white/70 p-5 shadow-sm backdrop-blur">
+          <h2 className="mb-3 text-lg font-semibold text-sky-900">
+            Users <span className="text-sm font-normal text-sky-700/70">({profiles.length})</span>
           </h2>
-          <div className="max-h-72 overflow-y-auto rounded-md border bg-card">
+          <div className="max-h-72 overflow-y-auto rounded-lg border border-sky-100 bg-white">
             <table className="w-full text-sm">
-              <thead className="sticky top-0 z-10 bg-muted/80 text-left text-xs uppercase text-muted-foreground backdrop-blur">
+              <thead className="sticky top-0 z-10 bg-gradient-to-r from-sky-100 to-indigo-100 text-left text-xs uppercase text-sky-900 backdrop-blur">
                 <tr>
                   <th className="px-3 py-2">User</th>
                   <th className="px-3 py-2">Status</th>
@@ -472,16 +473,21 @@ function AdminPage() {
                   const isFam = !!p.person_id;
                   const status = r === "admin" ? "Admin" : isFam ? "Family member" : r === "member" ? "New member" : "Visitor";
                   const isOnline = !!online[p.id];
+                  const statusColor =
+                    r === "admin" ? "border-rose-300 bg-rose-100 text-rose-800"
+                    : isFam ? "border-emerald-300 bg-emerald-100 text-emerald-800"
+                    : r === "member" ? "border-amber-300 bg-amber-100 text-amber-800"
+                    : "border-slate-300 bg-slate-100 text-slate-700";
                   return (
-                    <tr key={p.id} className="border-t">
+                    <tr key={p.id} className="border-t border-sky-50 hover:bg-sky-50/50">
                       <td className="px-3 py-2">
-                        <div className="font-medium">{p.display_name ?? "(no name)"}</div>
-                        <div className="text-xs text-muted-foreground">{p.email}</div>
+                        <div className="font-medium text-slate-900">{p.display_name ?? "(no name)"}</div>
+                        <div className="text-xs text-slate-500">{p.email}</div>
                       </td>
-                      <td className="px-3 py-2"><Badge variant="outline">{status}</Badge></td>
+                      <td className="px-3 py-2"><Badge variant="outline" className={statusColor}>{status}</Badge></td>
                       <td className="px-3 py-2">
                         <select
-                          className="rounded border bg-background px-2 py-1 text-xs"
+                          className="rounded border border-indigo-200 bg-indigo-50 px-2 py-1 text-xs text-indigo-900 focus:border-indigo-400 focus:outline-none"
                           value={r}
                           disabled={p.id === user?.id}
                           onChange={(e) => changeRole(p.id, e.target.value as "admin" | "member" | "visitor")}
@@ -493,11 +499,11 @@ function AdminPage() {
                       </td>
                       <td className="px-3 py-2">
                         {isOnline ? (
-                          <span className="inline-flex items-center gap-1 text-xs text-green-700">
-                            <span className="h-2 w-2 rounded-full bg-green-500" /> online
+                          <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700">
+                            <span className="h-2 w-2 animate-pulse rounded-full bg-green-500" /> online
                           </span>
                         ) : (
-                          <span className="text-xs text-muted-foreground">—</span>
+                          <span className="text-xs text-slate-400">—</span>
                         )}
                       </td>
                     </tr>
@@ -509,42 +515,43 @@ function AdminPage() {
         </section>
 
 
+
         <RolePermissionsSection />
 
 
 
-        <section>
-          <h2 className="mb-3 text-lg font-semibold">
-            Suggestions <span className="text-sm font-normal text-muted-foreground">({suggestions.filter(s => s.status === "pending").length} pending)</span>
+        <section className="rounded-xl border border-amber-200 bg-white/70 p-5 shadow-sm backdrop-blur">
+          <h2 className="mb-3 text-lg font-semibold text-amber-900">
+            Suggestions <span className="text-sm font-normal text-amber-700/70">({suggestions.filter(s => s.status === "pending").length} pending)</span>
           </h2>
           {suggestions.filter((s) => s.status === "pending").length === 0 ? (
-            <p className="rounded-md border bg-card p-4 text-sm text-muted-foreground">No suggestions yet.</p>
+            <p className="rounded-lg border border-dashed border-amber-200 bg-amber-50/50 p-4 text-sm text-amber-700">No suggestions yet.</p>
           ) : (
             <ul className="space-y-2">
               {suggestions.filter((s) => s.status === "pending").map((s) => {
                 const person = persons.find((p) => p.id === s.person_id);
                 return (
-                  <li key={s.id} className="rounded-md border bg-card p-3">
+                  <li key={s.id} className="rounded-lg border border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-3 shadow-sm">
                     <div className="flex flex-wrap items-center gap-2 text-sm">
-                      <span className="font-medium">{person?.name ?? "(unknown)"}</span>
-                      <span className="text-xs text-muted-foreground">
+                      <span className="font-semibold text-amber-900">{person?.name ?? "(unknown)"}</span>
+                      <span className="text-xs text-amber-700/70">
                         {new Date(s.created_at).toLocaleString()} · {s.submitter_name ?? "Anonymous"}
                         {s.submitter_email ? ` · ${s.submitter_email}` : ""}
                       </span>
                     </div>
-                    <p className="mt-1 text-sm">{s.message}</p>
+                    <p className="mt-1 text-sm text-slate-800">{s.message}</p>
                     <div className="mt-2 flex flex-wrap gap-2">
                       {(() => {
                         try {
                           const parsed = JSON.parse(s.message) as { type?: string };
                           return parsed.type === "person_edit" ? (
-                            <Button size="sm" variant="secondary" onClick={() => applyEditSuggestion(s)}>Approve edit</Button>
+                            <Button size="sm" className="bg-emerald-600 text-white hover:bg-emerald-700" onClick={() => applyEditSuggestion(s)}>Approve edit</Button>
                           ) : null;
                         } catch {
                           return null;
                         }
                       })()}
-                      <Button size="sm" variant="ghost" onClick={() => deleteSuggestion(s.id)}>Dismiss</Button>
+                      <Button size="sm" variant="ghost" className="text-rose-700 hover:bg-rose-100 hover:text-rose-800" onClick={() => deleteSuggestion(s.id)}>Dismiss</Button>
                     </div>
                   </li>
                 );
@@ -554,10 +561,10 @@ function AdminPage() {
         </section>
 
 
-        <section>
-          <h2 className="mb-3 text-lg font-semibold">Pending join requests</h2>
+        <section className="rounded-xl border border-rose-200 bg-white/70 p-5 shadow-sm backdrop-blur">
+          <h2 className="mb-3 text-lg font-semibold text-rose-900">Pending join requests</h2>
           {pending.length === 0 ? (
-            <p className="rounded-md border bg-card p-6 text-sm text-muted-foreground">
+            <p className="rounded-lg border border-dashed border-rose-200 bg-rose-50/50 p-6 text-sm text-rose-700">
               No pending requests.
             </p>
           ) : (
@@ -565,39 +572,39 @@ function AdminPage() {
               {pending.map((r) => {
                 const parent = persons.find((p) => p.id === r.parent_person_id);
                 return (
-                  <li key={r.id} className="rounded-md border bg-card p-4">
+                  <li key={r.id} className="rounded-lg border border-rose-200 bg-gradient-to-br from-rose-50 to-pink-50 p-4 shadow-sm">
                     <div className="flex items-start gap-4">
                       {r.proposed_photo_url ? (
-                        <img src={r.proposed_photo_url} alt="" className="h-16 w-16 rounded-full object-cover" />
+                        <img src={r.proposed_photo_url} alt="" className="h-16 w-16 rounded-full border-2 border-rose-200 object-cover" />
                       ) : (
-                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted text-sm font-semibold text-muted-foreground">
+                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-rose-200 to-pink-300 text-sm font-semibold text-rose-900">
                           {r.proposed_name.split(" ").map((s) => s[0]).slice(0, 2).join("")}
                         </div>
                       )}
                       <div className="flex-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="font-medium">{r.proposed_name}</span>
-                          <Badge>{r.relation} of {parent?.name ?? "(unknown)"}</Badge>
-                          <span className="text-xs text-muted-foreground">
+                          <span className="font-semibold text-rose-900">{r.proposed_name}</span>
+                          <Badge className="bg-rose-600 text-white hover:bg-rose-700">{r.relation} of {parent?.name ?? "(unknown)"}</Badge>
+                          <span className="text-xs text-rose-700/70">
                             {new Date(r.created_at).toLocaleString()}
                           </span>
                         </div>
-                        <p className="mt-1 text-xs text-muted-foreground">
+                        <p className="mt-1 text-xs text-rose-700/80">
                           {r.proposed_gender}
                           {r.proposed_birth_date ? ` · born ${r.proposed_birth_date}` : ""}
                         </p>
                         {r.proposed_biography && (
-                          <p className="mt-2 text-sm">{r.proposed_biography}</p>
+                          <p className="mt-2 text-sm text-slate-800">{r.proposed_biography}</p>
                         )}
                         {r.message && (
-                          <p className="mt-2 rounded bg-muted/50 p-2 text-sm italic">
+                          <p className="mt-2 rounded bg-white/70 p-2 text-sm italic text-slate-700">
                             "{r.message}"
                           </p>
                         )}
                       </div>
                       <div className="flex flex-col gap-1">
-                        <Button size="sm" onClick={() => approve(r)}>Approve & add</Button>
-                        <Button size="sm" variant="ghost" onClick={() => reject(r)}>Reject</Button>
+                        <Button size="sm" className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-600 hover:to-emerald-700" onClick={() => approve(r)}>Approve & add</Button>
+                        <Button size="sm" variant="ghost" className="text-rose-700 hover:bg-rose-100 hover:text-rose-800" onClick={() => reject(r)}>Reject</Button>
                       </div>
                     </div>
                   </li>
@@ -606,6 +613,7 @@ function AdminPage() {
             </ul>
           )}
         </section>
+
 
         {decided.length > 0 && (
           <section>
