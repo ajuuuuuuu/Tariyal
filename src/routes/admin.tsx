@@ -169,6 +169,30 @@ function AdminPage() {
     },
   });
 
+  const permsQ = useQuery({
+    queryKey: ["role_permissions_admin"],
+    enabled: isAdmin,
+    queryFn: fetchRolePermissions,
+  });
+
+  async function setUserDeleteScope(userId: string, scope: DeleteScope) {
+    const current = permsQ.data ?? (await fetchRolePermissions());
+    const next = {
+      ...current,
+      user_overrides: {
+        ...(current.user_overrides ?? {}),
+        [userId]: { delete_scope: scope },
+      },
+    };
+    try {
+      await saveRolePermissions(next);
+      toast.success("Delete access updated");
+      permsQ.refetch();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to save");
+    }
+  }
+
   const visitStats = useMemo(() => {
     const rows = visitsQ.data ?? [];
     const days: { date: string; visits: number; unique: number }[] = [];
