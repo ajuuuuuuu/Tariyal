@@ -12,6 +12,9 @@ const socialLinks = [
 ];
 
 export function Footer() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  if (pathname === "/auth") return null;
+
   return (
     <footer className="relative w-full shrink-0 bg-transparent">
       {/* Gold divider with centered emblem */}
