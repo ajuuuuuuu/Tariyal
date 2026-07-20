@@ -520,38 +520,38 @@ function AdminPage() {
 
 
 
-        <section>
-          <h2 className="mb-3 text-lg font-semibold">
-            Suggestions <span className="text-sm font-normal text-muted-foreground">({suggestions.filter(s => s.status === "pending").length} pending)</span>
+        <section className="rounded-xl border border-amber-200 bg-white/70 p-5 shadow-sm backdrop-blur">
+          <h2 className="mb-3 text-lg font-semibold text-amber-900">
+            Suggestions <span className="text-sm font-normal text-amber-700/70">({suggestions.filter(s => s.status === "pending").length} pending)</span>
           </h2>
           {suggestions.filter((s) => s.status === "pending").length === 0 ? (
-            <p className="rounded-md border bg-card p-4 text-sm text-muted-foreground">No suggestions yet.</p>
+            <p className="rounded-lg border border-dashed border-amber-200 bg-amber-50/50 p-4 text-sm text-amber-700">No suggestions yet.</p>
           ) : (
             <ul className="space-y-2">
               {suggestions.filter((s) => s.status === "pending").map((s) => {
                 const person = persons.find((p) => p.id === s.person_id);
                 return (
-                  <li key={s.id} className="rounded-md border bg-card p-3">
+                  <li key={s.id} className="rounded-lg border border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-3 shadow-sm">
                     <div className="flex flex-wrap items-center gap-2 text-sm">
-                      <span className="font-medium">{person?.name ?? "(unknown)"}</span>
-                      <span className="text-xs text-muted-foreground">
+                      <span className="font-semibold text-amber-900">{person?.name ?? "(unknown)"}</span>
+                      <span className="text-xs text-amber-700/70">
                         {new Date(s.created_at).toLocaleString()} · {s.submitter_name ?? "Anonymous"}
                         {s.submitter_email ? ` · ${s.submitter_email}` : ""}
                       </span>
                     </div>
-                    <p className="mt-1 text-sm">{s.message}</p>
+                    <p className="mt-1 text-sm text-slate-800">{s.message}</p>
                     <div className="mt-2 flex flex-wrap gap-2">
                       {(() => {
                         try {
                           const parsed = JSON.parse(s.message) as { type?: string };
                           return parsed.type === "person_edit" ? (
-                            <Button size="sm" variant="secondary" onClick={() => applyEditSuggestion(s)}>Approve edit</Button>
+                            <Button size="sm" className="bg-emerald-600 text-white hover:bg-emerald-700" onClick={() => applyEditSuggestion(s)}>Approve edit</Button>
                           ) : null;
                         } catch {
                           return null;
                         }
                       })()}
-                      <Button size="sm" variant="ghost" onClick={() => deleteSuggestion(s.id)}>Dismiss</Button>
+                      <Button size="sm" variant="ghost" className="text-rose-700 hover:bg-rose-100 hover:text-rose-800" onClick={() => deleteSuggestion(s.id)}>Dismiss</Button>
                     </div>
                   </li>
                 );
@@ -561,10 +561,10 @@ function AdminPage() {
         </section>
 
 
-        <section>
-          <h2 className="mb-3 text-lg font-semibold">Pending join requests</h2>
+        <section className="rounded-xl border border-rose-200 bg-white/70 p-5 shadow-sm backdrop-blur">
+          <h2 className="mb-3 text-lg font-semibold text-rose-900">Pending join requests</h2>
           {pending.length === 0 ? (
-            <p className="rounded-md border bg-card p-6 text-sm text-muted-foreground">
+            <p className="rounded-lg border border-dashed border-rose-200 bg-rose-50/50 p-6 text-sm text-rose-700">
               No pending requests.
             </p>
           ) : (
@@ -572,39 +572,39 @@ function AdminPage() {
               {pending.map((r) => {
                 const parent = persons.find((p) => p.id === r.parent_person_id);
                 return (
-                  <li key={r.id} className="rounded-md border bg-card p-4">
+                  <li key={r.id} className="rounded-lg border border-rose-200 bg-gradient-to-br from-rose-50 to-pink-50 p-4 shadow-sm">
                     <div className="flex items-start gap-4">
                       {r.proposed_photo_url ? (
-                        <img src={r.proposed_photo_url} alt="" className="h-16 w-16 rounded-full object-cover" />
+                        <img src={r.proposed_photo_url} alt="" className="h-16 w-16 rounded-full border-2 border-rose-200 object-cover" />
                       ) : (
-                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted text-sm font-semibold text-muted-foreground">
+                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-rose-200 to-pink-300 text-sm font-semibold text-rose-900">
                           {r.proposed_name.split(" ").map((s) => s[0]).slice(0, 2).join("")}
                         </div>
                       )}
                       <div className="flex-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="font-medium">{r.proposed_name}</span>
-                          <Badge>{r.relation} of {parent?.name ?? "(unknown)"}</Badge>
-                          <span className="text-xs text-muted-foreground">
+                          <span className="font-semibold text-rose-900">{r.proposed_name}</span>
+                          <Badge className="bg-rose-600 text-white hover:bg-rose-700">{r.relation} of {parent?.name ?? "(unknown)"}</Badge>
+                          <span className="text-xs text-rose-700/70">
                             {new Date(r.created_at).toLocaleString()}
                           </span>
                         </div>
-                        <p className="mt-1 text-xs text-muted-foreground">
+                        <p className="mt-1 text-xs text-rose-700/80">
                           {r.proposed_gender}
                           {r.proposed_birth_date ? ` · born ${r.proposed_birth_date}` : ""}
                         </p>
                         {r.proposed_biography && (
-                          <p className="mt-2 text-sm">{r.proposed_biography}</p>
+                          <p className="mt-2 text-sm text-slate-800">{r.proposed_biography}</p>
                         )}
                         {r.message && (
-                          <p className="mt-2 rounded bg-muted/50 p-2 text-sm italic">
+                          <p className="mt-2 rounded bg-white/70 p-2 text-sm italic text-slate-700">
                             "{r.message}"
                           </p>
                         )}
                       </div>
                       <div className="flex flex-col gap-1">
-                        <Button size="sm" onClick={() => approve(r)}>Approve & add</Button>
-                        <Button size="sm" variant="ghost" onClick={() => reject(r)}>Reject</Button>
+                        <Button size="sm" className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-600 hover:to-emerald-700" onClick={() => approve(r)}>Approve & add</Button>
+                        <Button size="sm" variant="ghost" className="text-rose-700 hover:bg-rose-100 hover:text-rose-800" onClick={() => reject(r)}>Reject</Button>
                       </div>
                     </div>
                   </li>
@@ -613,6 +613,7 @@ function AdminPage() {
             </ul>
           )}
         </section>
+
 
         {decided.length > 0 && (
           <section>
