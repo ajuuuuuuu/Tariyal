@@ -21,41 +21,32 @@ export function Footer() {
       <div className="relative">
         <div className="h-[2px] w-full bg-[#d4af37]" />
 
-        <div className="pointer-events-none absolute left-1/2 -top-[38px] -translate-x-1/2">
+        {/* Mobile: small emblem sits ABOVE the bar so it doesn't cover footer content */}
+        <div className="pointer-events-none absolute left-1/2 -top-[42px] -translate-x-1/2 sm:hidden">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[#d4af37] bg-gradient-to-b from-[#09224c] to-[#061226] shadow-xl">
+            <img
+              src="/logo-tree.png"
+              alt="Tariyal tree logo"
+              className="h-[70%] w-[70%] object-contain"
+            />
+          </div>
+        </div>
+
+        {/* Desktop / tablet: full emblem with flourishes */}
+        <div className="pointer-events-none absolute left-1/2 -top-[38px] hidden -translate-x-1/2 sm:block">
           <div className="relative flex items-center">
-            {/* Left flourish */}
-            <svg
-              className="mr-2"
-              xmlns="http://www.w3.org/2000/svg"
-              width="90"
-              height="30"
-              viewBox="0 0 100 40"
-              fill="none"
-            >
+            <svg className="mr-2" xmlns="http://www.w3.org/2000/svg" width="90" height="30" viewBox="0 0 100 40" fill="none">
               <path d="M0 20H95" stroke="#D4AF37" strokeWidth="2" />
               <path d="M5 20C22 5 42 5 47 20C52 35 72 35 89 20" stroke="#D4AF37" strokeWidth="1.5" />
               <circle cx="2" cy="20" r="3" fill="#D4AF37" />
               <circle cx="95" cy="20" r="3" fill="#D4AF37" />
             </svg>
 
-            {/* Center emblem */}
             <div className="flex h-[76px] w-[76px] items-center justify-center rounded-full border-2 border-[#d4af37] bg-gradient-to-b from-[#09224c] to-[#061226] shadow-2xl">
-              <img
-                src="/logo-tree.png"
-                alt="Tariyal tree logo"
-                className="h-[70%] w-[70%] object-contain"
-              />
+              <img src="/logo-tree.png" alt="Tariyal tree logo" className="h-[70%] w-[70%] object-contain" />
             </div>
 
-            {/* Right flourish */}
-            <svg
-              className="ml-2"
-              xmlns="http://www.w3.org/2000/svg"
-              width="90"
-              height="30"
-              viewBox="0 0 100 40"
-              fill="none"
-            >
+            <svg className="ml-2" xmlns="http://www.w3.org/2000/svg" width="90" height="30" viewBox="0 0 100 40" fill="none">
               <path d="M5 20H100" stroke="#D4AF37" strokeWidth="2" />
               <path d="M11 20C28 35 48 35 53 20C58 5 78 5 95 20" stroke="#D4AF37" strokeWidth="1.5" />
               <circle cx="5" cy="20" r="3" fill="#D4AF37" />
@@ -125,40 +116,41 @@ export function Footer() {
           </div>
 
           {/* Mobile / Tablet */}
-          <div className="flex h-[48px] items-center justify-between gap-3 px-3 lg:hidden">
-            <div className="flex min-w-0 items-center gap-2">
-              <div className="relative flex h-7 w-6 shrink-0 items-center justify-center">
+          <div className="flex min-h-[44px] items-center justify-between gap-2 px-2 py-1.5 lg:hidden">
+            <div className="flex min-w-0 items-center gap-1.5">
+              <div className="relative flex h-6 w-5 shrink-0 items-center justify-center">
                 <Shield className="absolute inset-0 h-full w-full text-[#d4af37]" strokeWidth={1.5} />
-                <Crown className="relative h-3 w-3 text-[#d4af37]" />
+                <Crown className="relative h-2.5 w-2.5 text-[#d4af37]" />
               </div>
               <div className="min-w-0">
-                <h2 className="truncate font-serif text-[11px] leading-none tracking-wider text-[#e7c978]">
+                <h2 className="truncate font-serif text-[10px] leading-none tracking-wider text-[#e7c978]">
                   TARIYAL
                 </h2>
-                <p className="mt-0.5 truncate text-[8px] tracking-[0.2em] text-[#e7c978]">
+                <p className="mt-0.5 truncate text-[7px] tracking-[0.18em] text-[#e7c978]">
                   VANSH | VANSHAWALI
                 </p>
               </div>
             </div>
 
-            <div className="flex shrink-0 items-center gap-1.5">
+            <div className="flex shrink-0 items-center gap-1">
               {socialLinks.map(({ href, label, icon: Icon }) => (
                 <a
                   key={label}
                   href={href}
                   aria-label={label}
-                  className="flex h-6 w-6 items-center justify-center rounded-full border border-[#d4af37] text-[#d4af37]"
+                  className="flex h-5 w-5 items-center justify-center rounded-full border border-[#d4af37] text-[#d4af37] max-[360px]:h-[18px] max-[360px]:w-[18px]"
                 >
-                  <Icon size={10} />
+                  <Icon size={9} />
                 </a>
               ))}
             </div>
 
-            <p className="shrink-0 text-right text-[9px] leading-tight text-[#e7c978]">
+            <p className="shrink-0 text-right text-[8px] leading-tight text-[#e7c978]">
               © 2025 Tariyal<br />
               <span className="italic text-[#d9c07b]">All rights reserved.</span>
             </p>
           </div>
+
 
         </div>
       </div>
