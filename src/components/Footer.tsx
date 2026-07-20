@@ -5,8 +5,8 @@ const navItems = ["Home", "Tree", "Members", "Gallery", "About Us", "Contact"];
 const socialLinks = [
   { href: "#", label: "Facebook", icon: Facebook },
   { href: "#", label: "Instagram", icon: Instagram },
-  { href: "https://wa.me/919999999999", label: "WhatsApp", icon: MessageCircle },
-  { href: "mailto:your@email.com", label: "Email", icon: Mail },
+  { href: "https://wa.me/918864860736", label: "WhatsApp", icon: MessageCircle },
+  { href: "mailto:adrashtariyal124@email.com", label: "Email", icon: Mail },
 ];
 
 export function Footer() {
@@ -15,7 +15,7 @@ export function Footer() {
       <div className="relative">
         <div className="h-[2px] w-full bg-[#d4af37]" />
 
-        <div className="absolute left-1/2 -top-[31px] -translate-x-1/2">
+        <div className="absolute left-1/2 -top-[58px] -translate-x-1/2">
           <div className="relative">
             
             <svg
@@ -69,7 +69,7 @@ export function Footer() {
               <path d="M0 20C15 8 35 8 40 20C45 32 58 32 66 20" stroke="#D4AF37" strokeWidth="3" />
             </svg> */}
 
-            <div className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-[#d4af37] bg-gradient-to-b from-[#09224c] to-[#061226] shadow-2xl">
+            <div className="flex h-12 w-12 items-center mt-9 justify-center rounded-full border-2 border-[#d4af37] bg-gradient-to-b from-[#09224c] to-[#061226] shadow-2xl">
               <img
                 src="/logo-tree.png"
                 alt="Tariyal tree logo"
@@ -111,7 +111,7 @@ export function Footer() {
 
             <div className="h-12 w-px bg-[#8e7740]" />
 
-            <div className="flex items-center gap-2">
+            <div className="flex w-full justify-end gap-2">
               {socialLinks.map(({ href, label, icon: Icon }) => (
                 <a
                   key={label}
@@ -128,7 +128,7 @@ export function Footer() {
 
             <div className="text-right">
               <h3 className="text-sm font-semibold text-[#e7c978]">© 2026 Tariyal Vansh</h3>
-              <p className="mt-1 text-xs text-[#d9c07b]">Preserving our heritage with pride.</p>
+              <p className="mt-1 text-[10px] text-[#d9c07b]">Preserving our heritage with pride.</p>
             </div>
           </div>
 
@@ -147,14 +147,14 @@ export function Footer() {
                   </a>
                 ))}
               </div>
-              <div className="mb-1 flex gap-2">
+              <div className="mb-1 flex gap-2 ">
                 {socialLinks.map(({ href, label, icon: Icon }) => (
-                  <a key={label} href={href} aria-label={label} className="text-[#d4af37]">
-                    <Icon size={12} />
+                  <a key={label} href={href} aria-label={label} className="text-[#d4af37] text-2xl">
+                    <Icon size={1} />
                   </a>
                 ))}
               </div>
-              <p className="text-center text-xs text-[#d4af37]">© 2026 Tariyal Vansh</p>
+              <p className="text-center text-[#d4af37]">© 2026 Tariyal Vansh</p>
             </div>
           </div>
         </div>

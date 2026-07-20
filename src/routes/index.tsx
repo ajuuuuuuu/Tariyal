@@ -337,7 +337,7 @@ function Index() {
     : null;
 
   return (
-    <div className="flex h-dvh flex-col overflow-hidden ">
+    <div className="fixed inset-0 flex flex-col overflow-hidden overscroll-none">
       <Navbar
         user={user}
         profile={profile}
