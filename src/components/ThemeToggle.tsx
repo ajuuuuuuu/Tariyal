@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Moon, Sun } from "lucide-react";
 
 const STORAGE_KEY = "tariyal-theme";
@@ -9,7 +9,7 @@ function applyTheme(theme: "light" | "dark") {
   else root.classList.remove("dark");
 }
 
-export function ThemeToggle() {
+export function useTheme() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [mounted, setMounted] = useState(false);
 
@@ -20,23 +20,30 @@ export function ThemeToggle() {
     setMounted(true);
   }, []);
 
-  const toggle = () => {
-    const next = theme === "dark" ? "light" : "dark";
-    setTheme(next);
-    applyTheme(next);
-    try {
-      localStorage.setItem(STORAGE_KEY, next);
-    } catch {
-      /* ignore */
-    }
-  };
+  const toggle = useCallback(() => {
+    setTheme((prev) => {
+      const next = prev === "dark" ? "light" : "dark";
+      applyTheme(next);
+      try {
+        localStorage.setItem(STORAGE_KEY, next);
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+  }, []);
 
+  return { theme, mounted, toggle };
+}
+
+export function ThemeToggle({ className = "" }: { className?: string }) {
+  const { theme, mounted, toggle } = useTheme();
   return (
     <button
       type="button"
       aria-label={mounted && theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
       onClick={toggle}
-      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-yellow-600 bg-linear-to-b from-yellow-400 to-yellow-500 text-slate-900 shadow-md transition-transform hover:scale-105 sm:h-10 sm:w-10"
+      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-yellow-600 bg-linear-to-b from-yellow-400 to-yellow-500 text-slate-900 shadow-md transition-transform hover:scale-105 sm:h-10 sm:w-10 ${className}`}
     >
       {mounted && theme === "dark" ? (
         <Sun className="h-4 w-4 sm:h-5 sm:w-5" strokeWidth={2.5} />

@@ -11,7 +11,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { ThemeToggle, useTheme } from "@/components/ThemeToggle";
+import { Moon, Sun } from "lucide-react";
 
 /**
  * Reusable royal-styled navbar.
