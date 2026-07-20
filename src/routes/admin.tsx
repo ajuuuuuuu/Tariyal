@@ -380,11 +380,11 @@ function AdminPage() {
 
       <div className="mx-auto max-w-5xl space-y-8 p-6">
 
-        <section className="rounded-xl border border-indigo-200 bg-white/70 p-5 shadow-sm backdrop-blur">
+        <section className="rounded-xl border border-border bg-card p-5 shadow-sm">
           <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-indigo-900">Visitor traffic</h2>
-              <p className="text-sm text-indigo-700/70">Page visits over the last 30 days.</p>
+              <h2 className="text-lg font-semibold text-foreground">Visitor traffic</h2>
+              <p className="text-sm text-muted-foreground">Page visits over the last 30 days.</p>
             </div>
             <div className="grid grid-cols-3 gap-2 text-sm">
               <div className="rounded-lg border border-emerald-200 bg-gradient-to-br from-emerald-50 to-emerald-100 p-3 shadow-sm">
@@ -424,11 +424,11 @@ function AdminPage() {
           </div>
         </section>
 
-        <section className="rounded-xl border border-emerald-200 bg-white/70 p-5 shadow-sm backdrop-blur">
+        <section className="rounded-xl border border-border bg-card p-5 shadow-sm">
           <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-emerald-900">Online now</h2>
-              <p className="text-sm text-emerald-700/70">Live viewers and active admin activity.</p>
+              <h2 className="text-lg font-semibold text-foreground">Online now</h2>
+              <p className="text-sm text-muted-foreground">Live viewers and active admin activity.</p>
             </div>
             <div className="grid gap-2 sm:grid-cols-2">
               <div className="rounded-lg border border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-100 p-3 text-sm shadow-sm">
@@ -442,7 +442,7 @@ function AdminPage() {
             </div>
           </div>
           {onlineUsers.length === 0 ? (
-            <p className="rounded-lg border border-dashed border-emerald-200 bg-emerald-50/50 p-4 text-sm text-emerald-700">No one online.</p>
+            <p className="rounded-lg border border-dashed border-border bg-muted/40 p-4 text-sm text-muted-foreground">No one online.</p>
           ) : (
             <div className="flex flex-wrap gap-2">
               {onlineUsers.map((p) => (
@@ -457,8 +457,8 @@ function AdminPage() {
         </section>
 
 
-        <section className="rounded-xl border border-sky-200 bg-white/70 p-5 shadow-sm backdrop-blur">
-          <h2 className="mb-3 text-lg font-semibold text-sky-900">
+        <section className="rounded-xl border border-border bg-card p-5 shadow-sm">
+          <h2 className="mb-3 text-lg font-semibold text-foreground">
             Users <span className="text-sm font-normal text-sky-700/70">({profiles.length})</span>
           </h2>
           <div className="max-h-72 overflow-y-auto rounded-lg border border-sky-100 bg-white">
@@ -524,12 +524,12 @@ function AdminPage() {
 
 
 
-        <section className="rounded-xl border border-amber-200 bg-white/70 p-5 shadow-sm backdrop-blur">
-          <h2 className="mb-3 text-lg font-semibold text-amber-900">
+        <section className="rounded-xl border border-border bg-card p-5 shadow-sm">
+          <h2 className="mb-3 text-lg font-semibold text-foreground">
             Suggestions <span className="text-sm font-normal text-amber-700/70">({suggestions.filter(s => s.status === "pending").length} pending)</span>
           </h2>
           {suggestions.filter((s) => s.status === "pending").length === 0 ? (
-            <p className="rounded-lg border border-dashed border-amber-200 bg-amber-50/50 p-4 text-sm text-amber-700">No suggestions yet.</p>
+            <p className="rounded-lg border border-dashed border-border bg-muted/40 p-4 text-sm text-muted-foreground">No suggestions yet.</p>
           ) : (
             <ul className="space-y-2">
               {suggestions.filter((s) => s.status === "pending").map((s) => {
@@ -565,10 +565,10 @@ function AdminPage() {
         </section>
 
 
-        <section className="rounded-xl border border-rose-200 bg-white/70 p-5 shadow-sm backdrop-blur">
-          <h2 className="mb-3 text-lg font-semibold text-rose-900">Pending join requests</h2>
+        <section className="rounded-xl border border-border bg-card p-5 shadow-sm">
+          <h2 className="mb-3 text-lg font-semibold text-foreground">Pending join requests</h2>
           {pending.length === 0 ? (
-            <p className="rounded-lg border border-dashed border-rose-200 bg-rose-50/50 p-6 text-sm text-rose-700">
+            <p className="rounded-lg border border-dashed border-border bg-muted/40 p-4 text-sm text-muted-foreground">
               No pending requests.
             </p>
           ) : (
