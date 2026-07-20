@@ -64,7 +64,7 @@ export function Footer() {
       <div className="bg-gradient-to-r from-[#071329] via-[#0a2855] to-[#0c6388]">
         <div className="mx-auto max-w-[1800px]">
           {/* Desktop */}
-          <div className="hidden h-[70px] items-center justify-between gap-4 px-6 lg:flex">
+          <div className="hidden h-[48px] items-center justify-between gap-4 px-6 lg:flex">
             <div className="flex items-center gap-3">
               <div className="relative flex h-11 w-10 items-center justify-center">
                 <Shield className="absolute inset-0 h-full w-full text-[#d4af37]" strokeWidth={1.5} />
